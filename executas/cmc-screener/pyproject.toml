@@ -1,0 +1,25 @@
+[project]
+name = "tool-dev-cmc-screener-12345678"
+version = "1.0.0"
+description = "CMC Alpha Screener — Executa stdio tool plugin for Anna AI OS"
+requires-python = ">=3.10"
+authors = [{ name = "Ishant Panchal", email = "ishant.p@somaiya.edu" }]
+license = { text = "MIT" }
+dependencies = [
+  "httpx>=0.25.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+]
+
+[project.scripts]
+"tool-dev-cmc-screener-12345678" = "cmc_plugin:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["cmc_plugin", "sample_data"]

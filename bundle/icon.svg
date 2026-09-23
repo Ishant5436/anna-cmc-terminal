@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d"/>
+      <stop offset="100%" stop-color="#050811"/>
+    </linearGradient>
+    <linearGradient id="neonCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe"/>
+      <stop offset="100%" stop-color="#4facfe"/>
+    </linearGradient>
+    <linearGradient id="neonGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f5a0"/>
+      <stop offset="100%" stop-color="#00d9f5"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="2"/>
+  <!-- Grid Matrix Lines -->
+  <line x1="20" y1="44" x2="108" y2="44" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <line x1="20" y1="72" x2="108" y2="72" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <line x1="20" y1="100" x2="108" y2="100" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <!-- Momentum Candlesticks -->
+  <rect x="32" y="56" width="10" height="32" rx="2" fill="url(#neonGreen)"/>
+  <line x1="37" y1="46" x2="37" y2="96" stroke="#00f5a0" stroke-width="2"/>
+  <rect x="58" y="40" width="10" height="42" rx="2" fill="url(#neonCyan)"/>
+  <line x1="63" y1="30" x2="63" y2="92" stroke="#00f2fe" stroke-width="2"/>
+  <rect x="84" y="28" width="10" height="48" rx="2" fill="url(#neonGreen)"/>
+  <line x1="89" y1="18" x2="89" y2="86" stroke="#00f5a0" stroke-width="2"/>
+  <!-- Trend Vector Curve -->
+  <path d="M 28 88 Q 58 65 89 28" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,98 @@
+{
+  "schema": 2,
+  "permissions": [
+    "tools.invoke",
+    "chat.write_message",
+    "storage.read",
+    "storage.write",
+    "ui.svg"
+  ],
+  "required_executas": [
+    {
+      "tool_id": "bundled:cmc-screener",
+      "version": "latest"
+    }
+  ],
+  "optional_executas": [],
+  "system_prompt_addendum": "The user has CMC Alpha Terminal open. Use the screener Executa with method='screener' and arguments {action:'momentum'|'volatility'|'liquidity'|'breadth'|'quote'} to fetch institutional quantitative crypto metrics before making statements regarding market trend, volatility regimes, or asset liquidity.",
+  "user_message_prefix_template": "[CMC Terminal] {user_message}",
+  "tags": [
+    "crypto",
+    "finance",
+    "quantitative",
+    "screener",
+    "alpha"
+  ],
+  "ui": {
+    "bundle": {
+      "format": "static-spa",
+      "entry": "index.html",
+      "external_origins": []
+    },
+    "views": [
+      {
+        "name": "main",
+        "title": "CMC Alpha Terminal",
+        "default": true,
+        "entry": "index.html",
+        "min_size": {
+          "w": 440,
+          "h": 580
+        },
+        "default_size": {
+          "w": 560,
+          "h": 720
+        },
+        "max_size": {
+          "w": 960,
+          "h": 1080
+        },
+        "resizable": true,
+        "movable": true,
+        "single_instance": true,
+        "icon": "icon.svg"
+      }
+    ],
+    "host_api": {
+      "tools": [
+        "required:bundled:cmc-screener"
+      ],
+      "chat": [
+        "write_message"
+      ],
+      "artifact": [],
+      "fs": [],
+      "storage": [
+        "get",
+        "set"
+      ],
+      "prefs": [],
+      "window": [
+        "set_title"
+      ]
+    },
+    "csp_overrides": {
+      "img-src": [
+        "'self'",
+        "data:",
+        "blob:"
+      ],
+      "font-src": [
+        "'self'",
+        "data:"
+      ],
+      "style-src": [
+        "'self'"
+      ],
+      "script-src": [
+        "'self'"
+      ]
+    },
+    "state_merge": "last_writer_wins"
+  },
+  "dev": {
+    "fixtures": [],
+    "seed_storage": {},
+    "user_id": 1
+  }
+}

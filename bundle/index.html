@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>CMC Alpha Terminal</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand-section">
+      <img src="icon.svg" alt="Terminal Icon" class="app-icon">
+      <div class="brand-title">CMC Alpha Terminal</div>
+      <span class="brand-badge">PRO v1.0</span>
+    </div>
+    <div class="status-badge" id="host-status">
+      <span class="status-dot"></span>
+      <span id="host-label">Connecting...</span>
+    </div>
+  </header>
+
+  <!-- Metric Ribbon -->
+  <section class="metric-ribbon">
+    <div class="metric-pill">
+      <div class="label">Total MCap</div>
+      <div class="value" id="ribbon-mcap">$2.34T</div>
+    </div>
+    <div class="metric-pill">
+      <div class="label">24h Vol</div>
+      <div class="value" id="ribbon-vol">$68.5B</div>
+    </div>
+    <div class="metric-pill">
+      <div class="label">BTC Dom</div>
+      <div class="value" id="ribbon-btc-dom">54.8%</div>
+    </div>
+    <div class="metric-pill">
+      <div class="label">Adv/Dec</div>
+      <div class="value" id="ribbon-breadth">1.85 (Bull)</div>
+    </div>
+  </section>
+
+  <!-- Navigation Tabs -->
+  <nav class="tab-navigation">
+    <button class="tab-btn active" data-tab="tab-momentum">Momentum Screen</button>
+    <button class="tab-btn" data-tab="tab-volatility">Volatility Regimes</button>
+    <button class="tab-btn" data-tab="tab-liquidity">Liquidity Depth</button>
+    <button class="tab-btn" data-tab="tab-inspector">Asset Inspector</button>
+  </nav>
+
+  <!-- View 1: Momentum Screen -->
+  <main class="view-panel active" id="tab-momentum">
+    <div class="panel-header">
+      <div class="panel-title">Cross-Sectional Momentum Rankings</div>
+      <div class="panel-controls">
+        <button class="action-btn" id="btn-refresh-momentum">Run Screen</button>
+        <button class="action-btn share-btn" id="btn-share-momentum">Post to Chat</button>
+      </div>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Asset</th>
+            <th>Price</th>
+            <th>24h %</th>
+            <th>7d %</th>
+            <th>24h Vol</th>
+            <th>Alpha Score</th>
+          </tr>
+        </thead>
+        <tbody id="momentum-table-body">
+          <!-- Populated by app.js -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- View 2: Volatility Regimes -->
+  <main class="view-panel" id="tab-volatility">
+    <div class="panel-header">
+      <div class="panel-title">Extreme-Value Parkinson Volatility</div>
+      <div class="panel-controls">
+        <button class="action-btn" id="btn-refresh-vol">Scan Regimes</button>
+      </div>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Price</th>
+            <th>24h Volatility</th>
+            <th>Annualized</th>
+            <th>Regime</th>
+            <th>Risk Allocation</th>
+          </tr>
+        </thead>
+        <tbody id="vol-table-body">
+          <!-- Populated by app.js -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- View 3: Liquidity Depth -->
+  <main class="view-panel" id="tab-liquidity">
+    <div class="panel-header">
+      <div class="panel-title">Turnover Velocity & Slippage Tiers</div>
+      <div class="panel-controls">
+        <button class="action-btn" id="btn-refresh-liq">Evaluate Depth</button>
+      </div>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Price</th>
+            <th>24h Turnover</th>
+            <th>Liquidity Grade</th>
+            <th>Slippage Est</th>
+          </tr>
+        </thead>
+        <tbody id="liq-table-body">
+          <!-- Populated by app.js -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- View 4: Asset Inspector -->
+  <main class="view-panel" id="tab-inspector">
+    <div class="panel-header">
+      <div class="panel-title">Single Asset Quantitative Profile</div>
+    </div>
+    <div class="inspector-form">
+      <input type="text" class="inspector-input" id="inspector-ticker" value="BTC" placeholder="Enter ticker (e.g. BTC, ETH, SOL)">
+      <button class="action-btn" id="btn-inspect-ticker">Analyze</button>
+      <button class="action-btn share-btn" id="btn-share-ticker">Post to Chat</button>
+    </div>
+    <div class="stat-grid" id="inspector-grid">
+      <!-- Populated by app.js -->
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <span id="footer-source">Source: Offline High-Fidelity Dataset</span>
+    <span>Powered by Anna AI OS</span>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -24,7 +24,7 @@ DEFAULT_BASE_URL = "https://pro-api.coinmarketcap.com"
 
 MANIFEST: Dict[str, Any] = {
     "display_name": "CMC Alpha Screener",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": (
         "Institutional quantitative crypto intelligence, cross-sectional momentum screening, "
         "Parkinson realized volatility regime detection, and liquidity analytics."

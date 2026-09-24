@@ -1,6 +1,6 @@
 [project]
 name = "tool-dev-cmc-screener-12345678"
-version = "1.0.4"
+version = "1.0.5"
 description = "CMC Alpha Screener — Executa stdio tool plugin for Anna AI OS"
 requires-python = ">=3.10"
 authors = [{ name = "Ishant Panchal", email = "ishant.p@somaiya.edu" }]

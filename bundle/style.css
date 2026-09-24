@@ -1,58 +1,58 @@
 /* ==========================================================================
-   CMC Alpha Terminal - Audited shadcn/ui & KPI Dashboard Standard
+   CMC Alpha Terminal - Obsidian & Monochromatic Silver (Apple / Linear Pro)
    ========================================================================== */
 
 :root {
-  --background: #09090b;
+  --background: #050506;
   --foreground: #f4f4f5;
 
-  --card: #121215;
+  --card: #0e0e11;
   --card-foreground: #f4f4f5;
-  --card-elevated: #18181b;
-  --card-hover: #222226;
+  --card-elevated: #141418;
+  --card-hover: #1c1c22;
 
-  --popover: #18181b;
+  --popover: #141418;
   --popover-foreground: #f4f4f5;
 
-  --primary: #6366f1;
-  --primary-foreground: #ffffff;
-  --primary-hover: #4f46e5;
+  --btn-primary-bg: #f4f4f5;
+  --btn-primary-fg: #050506;
+  --btn-primary-hover: #e4e4e7;
 
-  --secondary: #27272a;
+  --secondary: #1e1e24;
   --secondary-foreground: #f4f4f5;
 
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
+  --muted: #1e1e24;
+  --muted-foreground: #71717a;
 
-  --accent: #222226;
+  --accent: #1c1c22;
   --accent-foreground: #f4f4f5;
 
-  --destructive: #ef4444;
+  --destructive: #f87171;
   --destructive-foreground: #ffffff;
 
   --border: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --input: #0e0e11;
-  --ring: #6366f1;
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --input: #0a0a0c;
+  --ring: rgba(255, 255, 255, 0.35);
 
   --radius: 6px;
 
-  /* Quant semantic tokens */
-  --quant-green: #10b981;
-  --quant-green-bg: rgba(16, 185, 129, 0.08);
-  --quant-green-border: rgba(16, 185, 129, 0.22);
+  /* Desaturated Quant Tokens */
+  --quant-green: #34d399;
+  --quant-green-bg: rgba(52, 211, 153, 0.08);
+  --quant-green-border: rgba(52, 211, 153, 0.22);
 
-  --quant-red: #ef4444;
-  --quant-red-bg: rgba(239, 68, 68, 0.08);
-  --quant-red-border: rgba(239, 68, 68, 0.22);
+  --quant-red: #f87171;
+  --quant-red-bg: rgba(248, 113, 113, 0.08);
+  --quant-red-border: rgba(248, 113, 113, 0.22);
 
-  --quant-blue: #3b82f6;
-  --quant-blue-bg: rgba(59, 130, 246, 0.08);
-  --quant-blue-border: rgba(59, 130, 246, 0.22);
+  --quant-blue: #94a3b8;
+  --quant-blue-bg: rgba(255, 255, 255, 0.05);
+  --quant-blue-border: rgba(255, 255, 255, 0.12);
 
-  --quant-amber: #f59e0b;
-  --quant-amber-bg: rgba(245, 158, 11, 0.08);
-  --quant-amber-border: rgba(245, 158, 11, 0.22);
+  --quant-amber: #fbbf24;
+  --quant-amber-bg: rgba(251, 191, 36, 0.08);
+  --quant-amber-border: rgba(251, 191, 36, 0.22);
 
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
   --font-mono: "SF Mono", Menlo, Monaco, Consolas, monospace;
@@ -86,7 +86,7 @@ html, body {
 }
 
 /* ==========================================================================
-   Header & Segmented Control (shadcn Toolbar Pattern)
+   Header & Toolbar Navigation (Obsidian & Silver)
    ========================================================================== */
 
 .terminal-header {
@@ -136,7 +136,7 @@ html, body {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: var(--foreground);
+  color: #ffffff;
 }
 
 .hud-badge {
@@ -152,7 +152,7 @@ html, body {
 .hud-badge.quant-blue {
   background: var(--quant-blue-bg);
   border-color: var(--quant-blue-border);
-  color: var(--quant-blue);
+  color: #e4e4e7;
 }
 
 .hud-badge.quant-green {
@@ -201,13 +201,14 @@ html, body {
 }
 
 .nav-tab:hover {
-  color: var(--foreground);
+  color: #ffffff;
   background: var(--accent);
 }
 
 .nav-tab.active {
-  color: var(--foreground);
+  color: #ffffff;
   background: var(--card-elevated);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
@@ -243,7 +244,7 @@ html, body {
 }
 
 /* ==========================================================================
-   Micro-Status Ribbon (Compact 24px shadcn KPI bar)
+   Micro-Status Ribbon (Compact 24px)
    ========================================================================== */
 
 .market-ribbon {
@@ -276,7 +277,7 @@ html, body {
 .ribbon-stat-val {
   font-family: var(--font-mono);
   font-weight: 500;
-  color: var(--foreground);
+  color: #ffffff;
 }
 
 .ribbon-stat-val.up {
@@ -341,7 +342,7 @@ html, body {
 .panel-heading {
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--foreground);
+  color: #ffffff;
   letter-spacing: -0.01em;
 }
 
@@ -385,30 +386,30 @@ html, body {
 }
 
 .hud-select-sm:focus {
-  border-color: var(--primary);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
-/* Action Buttons */
+/* Apple Pro White Action Button */
 .action-btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--primary);
-  color: var(--primary-foreground);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
   border: none;
   border-radius: var(--radius);
   padding: 6px 12px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.12s ease;
   white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .action-btn-primary:hover {
-  background: var(--primary-hover);
+  background: var(--btn-primary-hover);
 }
 
 .action-btn-primary:active {
@@ -424,8 +425,8 @@ html, body {
   display: none;
   width: 11px;
   height: 11px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #000000;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
@@ -435,7 +436,7 @@ html, body {
 }
 
 /* ==========================================================================
-   Audited shadcn Table Component
+   Audited Table Component (Silver Financial Grid)
    ========================================================================== */
 
 .table-card-wrapper {
@@ -456,7 +457,7 @@ html, body {
 .quant-table thead {
   position: sticky;
   top: 0;
-  background: #151518;
+  background: #111114;
   z-index: 2;
   border-bottom: 1px solid var(--border);
 }
@@ -570,6 +571,7 @@ html, body {
   gap: 6px;
   font-size: 10.5px;
   font-weight: 600;
+  color: #ffffff;
 }
 
 .dot {
@@ -622,7 +624,7 @@ html, body {
 
 .vol-regime-tag.compression {
   background: var(--quant-blue-bg);
-  color: var(--quant-blue);
+  color: #e4e4e7;
   border: 1px solid var(--quant-blue-border);
 }
 
@@ -674,8 +676,8 @@ html, body {
 
 .hud-input:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
 .inspector-stage {
@@ -698,6 +700,7 @@ html, body {
   font-size: 20px;
   font-weight: 700;
   display: block;
+  color: #ffffff;
 }
 
 .quote-change {

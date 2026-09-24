@@ -1,0 +1,54 @@
+{
+  "display_name": "CMC Alpha Screener",
+  "version": "1.0.4",
+  "description": "Institutional quantitative crypto intelligence, cross-sectional momentum screening, Parkinson realized volatility regime detection, and liquidity analytics.",
+  "author": "Ishant Panchal",
+  "homepage": "https://github.com/Ishant5436/anna-cmc-terminal",
+  "license": "MIT",
+  "tags": [
+    "crypto",
+    "finance",
+    "quantitative",
+    "screener",
+    "anna-app"
+  ],
+  "tools": [
+    {
+      "name": "screener",
+      "description": "Execute institutional quantitative crypto market screens. Use `action` to select: momentum | volatility | liquidity | breadth | quote.",
+      "parameters": [
+        {
+          "name": "action",
+          "type": "string",
+          "description": "One of: momentum, volatility, liquidity, breadth, quote.",
+          "required": true
+        },
+        {
+          "name": "top_n",
+          "type": "integer",
+          "description": "Optional number of assets to return for momentum screen (1-100, default 10).",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "min_volume_usd",
+          "type": "number",
+          "description": "Optional minimum 24h USD volume threshold for filtering (default 50,000,000).",
+          "required": false,
+          "default": 50000000
+        },
+        {
+          "name": "symbol",
+          "type": "string",
+          "description": "Target ticker symbol (e.g. BTC, ETH, SOL) required for volatility, liquidity, or quote.",
+          "required": false,
+          "default": "BTC"
+        }
+      ]
+    }
+  ],
+  "runtime": {
+    "type": "uv",
+    "min_version": "0.1.0"
+  }
+}

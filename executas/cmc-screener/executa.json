@@ -1,10 +1,10 @@
 {
   "slug": "cmc-screener",
   "name": "CMC Screener",
-  "version": "1.0.6",
+  "version": "1.0.9",
   "executa_type": "tool",
   "description": "Institutional quantitative crypto screening, Parkinson realized volatility regime detection, and liquidity analytics.",
-  "tool_id": "tool-dev-cmc-screener-12345678",
+  "tool_id": "tool-ishantpanchal-cmc-screener-hayqy5yh",
   "type": "python",
   "enabled": true,
   "distribution": {

@@ -153,3 +153,44 @@ def test_invoke_unknown_action_error():
     })
     assert res["success"] is False
     assert "Unknown action" in res["error"]
+
+
+def test_invoke_volatility_all_assets_list():
+    res = handle_invoke({
+        "tool": "screener",
+        "arguments": {"action": "volatility"}
+    })
+    assert res["success"] is True
+    data = res["data"]
+    assert "assets" in data
+    assert len(data["assets"]) >= 5
+    for item in data["assets"]:
+        assert "symbol" in item
+        assert "parkinson_vol" in item
+        assert "parkinson_volatility" in item
+        assert item["parkinson_vol"] == item["parkinson_volatility"]
+        assert "regime" in item
+        assert "risk_level" in item
+        assert "high_24h_usd" in item or "high_24h" in item
+
+
+def test_invoke_liquidity_all_assets_list():
+    res = handle_invoke({
+        "tool": "screener",
+        "arguments": {"action": "liquidity"}
+    })
+    assert res["success"] is True
+    data = res["data"]
+    assert "assets" in data
+    assert len(data["assets"]) >= 5
+    for item in data["assets"]:
+        assert "symbol" in item
+        assert "turnover_ratio" in item
+        assert "turnover_tier" in item
+        assert "slippage_risk" in item
+
+
+def test_manifest_version_109():
+    desc = handle_describe({})
+    assert desc["version"] == "1.0.9"
+

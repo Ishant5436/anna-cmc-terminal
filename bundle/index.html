@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="density-comfortable">
   <div class="terminal-container">
     <!-- Compact Linear Toolbar Header -->
     <header class="terminal-header">
@@ -18,13 +18,13 @@
         <div class="brand-meta">
           <div class="brand-title-row">
             <span class="brand-title">CMC Alpha</span>
-            <span class="hud-badge">v1.0.6</span>
+            <span class="hud-badge">v1.0.9</span>
           </div>
         </div>
       </div>
 
       <!-- Segmented Control Navigation (shadcn Tabs Pattern) -->
-      <nav class="nav-segment-bar">
+      <nav class="nav-segment-bar" aria-label="Terminal views">
         <button class="nav-tab active" data-tab="tab-momentum">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
           <span>Momentum</span>
@@ -43,102 +43,314 @@
         </button>
       </nav>
 
+      <!-- Toolbar Right: Density Toggle & Differentiated Connection Beacon -->
       <div class="header-status-group">
-        <div class="feed-indicator-pill">
+        <button class="density-toggle-btn font-mono" id="btn-toggle-density" title="Toggle table row density (Compact / Comfortable)">
+          <svg class="density-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <span id="density-label">Compact</span>
+        </button>
+
+        <div class="feed-indicator-pill" title="Live Institutional Market Feed">
           <span class="feed-dot"></span>
           <span class="feed-name">CMC Enterprise Feed</span>
         </div>
-        <div class="status-indicator-pill" id="host-status">
-          <span class="status-beacon"></span>
-          <span class="status-text" id="host-label">Connecting...</span>
+
+        <div class="status-indicator-pill clickable" id="host-status" title="Click to view connection telemetry & latency">
+          <span class="status-beacon live"></span>
+          <span class="status-text font-mono" id="host-label">Live · 42ms</span>
         </div>
       </div>
     </header>
 
+    <!-- Connection Diagnostic Popover (Floating) -->
+    <div class="connection-popover hidden" id="connection-popover" role="dialog" aria-label="Connection Diagnostics">
+      <div class="popover-header">
+        <span class="popover-title">Feed Diagnostics</span>
+        <button class="popover-close-btn" id="btn-close-conn-popover" aria-label="Close diagnostics">&times;</button>
+      </div>
+      <div class="popover-grid font-mono">
+        <div class="popover-row"><span class="popover-k">Status:</span><span class="popover-v up" id="diag-status">Connected · Healthy</span></div>
+        <div class="popover-row"><span class="popover-k">Endpoint:</span><span class="popover-v" id="diag-endpoint">anna.partners/ws/v1</span></div>
+        <div class="popover-row"><span class="popover-k">Round-Trip:</span><span class="popover-v font-bold" id="diag-latency">42 ms</span></div>
+        <div class="popover-row"><span class="popover-k">Last Heartbeat:</span><span class="popover-v" id="diag-heartbeat">1s ago</span></div>
+        <div class="popover-row"><span class="popover-k">Engine:</span><span class="popover-v">Parkinson Extreme-Value</span></div>
+      </div>
+      <button class="action-btn-ghost btn-full-width" id="btn-reconnect-feed">Reconnect Transport</button>
+    </div>
+
     <!-- Compact Micro-Summary Ribbon (Audited KPI Pattern) -->
-    <section class="market-ribbon">
+    <section class="market-ribbon" aria-label="Market Overview">
       <div class="ribbon-stat-item">
         <span class="ribbon-stat-label">Market Cap:</span>
-        <span class="ribbon-stat-val font-mono up" id="ribbon-mcap">$2.34T</span>
+        <span class="ribbon-stat-val font-mono up" id="ribbon-mcap">$2.34T <span class="delta-tag glyph-up">▲ 1.2%</span></span>
       </div>
       <span class="ribbon-sep">&middot;</span>
       <div class="ribbon-stat-item">
         <span class="ribbon-stat-label">24h Vol:</span>
-        <span class="ribbon-stat-val font-mono" id="ribbon-vol">$68.5B</span>
+        <span class="ribbon-stat-val font-mono" id="ribbon-vol">$68.5B <span class="delta-tag glyph-up">▲ 3.4%</span></span>
       </div>
       <span class="ribbon-sep">&middot;</span>
       <div class="ribbon-stat-item">
         <span class="ribbon-stat-label">BTC Dom:</span>
-        <span class="ribbon-stat-val font-mono" id="ribbon-btc-dom">54.8%</span>
+        <span class="ribbon-stat-val font-mono" id="ribbon-btc-dom">54.8% <span class="delta-tag glyph-down">▼ 0.2%</span></span>
       </div>
       <span class="ribbon-sep">&middot;</span>
-      <div class="ribbon-stat-item">
+      <div class="ribbon-stat-item" title="Ratio of Advancing to Declining Assets across Top 100">
         <span class="ribbon-stat-label">Breadth:</span>
-        <span class="ribbon-stat-val font-mono up" id="ribbon-breadth">1.85:1 (Bullish)</span>
+        <span class="ribbon-stat-val font-mono up" id="ribbon-breadth">1.85:1 <span class="breadth-pill up">Bullish (65 Adv / 35 Dec)</span></span>
       </div>
     </section>
 
     <!-- Main Viewport Panels -->
     <div class="terminal-viewport">
-      <!-- PANEL 1: MOMENTUM SCREEN -->
+      <!-- PANEL 1: MOMENTUM SCREEN (MASTER-DETAIL SPLIT) -->
       <section class="terminal-panel active" id="tab-momentum">
         <div class="panel-glass-surface">
+          <!-- Master Headline & Action Controls -->
           <div class="panel-headline-row">
             <div>
               <h2 class="panel-heading">Cross-Sectional Momentum Rankings</h2>
-              <p class="panel-subheading">Relative strength ranking combining 24h & 7d returns, volume weighting, and market capitalization.</p>
+              <p class="panel-subheading">Institutional multi-factor relative strength combining standardized returns, volume velocity, and market capitalization.</p>
             </div>
             <div class="controls-group">
-              <button class="action-btn-primary" id="btn-refresh-momentum">
-                <span class="btn-spinner" id="momentum-spinner"></span>
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                <span>Run Screen</span>
+              <span class="last-updated-text font-mono" id="momentum-last-updated">Updated: 14:32:07 UTC</span>
+              <button class="action-btn-primary" id="btn-apply-filters">
+                <span class="btn-spinner hidden" id="momentum-spinner"></span>
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                <span id="apply-btn-label">Apply Filters</span>
               </button>
             </div>
           </div>
 
           <!-- Filter & Controls Strip -->
           <div class="filter-strip">
+            <div class="filter-search-box">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="filter-search-input" class="hud-input-sm font-mono" placeholder="Search symbol or name (e.g. SOL, BTC)..." spellcheck="false" autocomplete="off" />
+              <button class="search-clear-btn hidden" id="btn-clear-search" aria-label="Clear search">&times;</button>
+            </div>
+
             <div class="filter-item">
-              <span class="filter-label">Min Volume:</span>
+              <label for="filter-min-volume" class="filter-label">Min Volume:</label>
               <select id="filter-min-volume" class="hud-select-sm font-mono">
                 <option value="100000000">$100M+</option>
                 <option value="500000000" selected>$500M+</option>
                 <option value="1000000000">$1B+</option>
+                <option value="0">All Volumes</option>
               </select>
             </div>
+
             <div class="filter-item">
-              <span class="filter-label">Universe:</span>
+              <label for="filter-universe" class="filter-label">Universe:</label>
               <select id="filter-universe" class="hud-select-sm font-mono">
                 <option value="top100" selected>Top 100 Large Caps</option>
                 <option value="layer1">Layer 1 Protocols</option>
                 <option value="defi">DeFi Bluechips</option>
               </select>
             </div>
+
             <div class="filter-item">
               <span class="filter-label">Weights:</span>
-              <span class="hud-badge quant-blue font-mono">24H 30% + 7D 50% + VOL 20%</span>
+              <button class="weights-trigger-btn font-mono" id="btn-open-weights" title="Click to edit quant weights & presets">
+                <span class="weights-icon">⚖</span>
+                <span id="weights-badge-label">24H 30% · 7D 50% · VOL 20%</span>
+                <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+
+            <button class="action-btn-ghost font-mono btn-reset" id="btn-reset-filters" title="Reset all search filters to default">Reset</button>
+          </div>
+
+          <!-- Secondary Meta Bar: Count & Data Export Cluster -->
+          <div class="table-meta-bar">
+            <div class="meta-left">
+              <span class="result-count-tag font-mono" id="filter-result-count">Showing 7 of 100 assets passing filters</span>
+              <span class="click-hint-tag font-mono">Select any row to inspect score breakdown</span>
+            </div>
+            <div class="table-export-cluster">
+              <button class="export-chip font-mono" id="btn-export-csv" title="Export current screen to CSV">
+                <svg class="export-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                CSV
+              </button>
+              <button class="export-chip font-mono" id="btn-export-json" title="Export current screen to JSON">
+                <svg class="export-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                JSON
+              </button>
+              <button class="export-chip font-mono" id="btn-copy-markdown" title="Copy formatted markdown table">
+                <svg class="export-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Markdown
+              </button>
             </div>
           </div>
 
-          <!-- Table Container (shadcn Table Component) -->
-          <div class="table-card-wrapper">
-            <table class="quant-table font-mono" id="momentum-table">
-              <thead>
-                <tr>
-                  <th style="width: 45px;">Rank</th>
-                  <th style="width: 140px;">Asset</th>
-                  <th style="text-align: right; width: 100px;">Price</th>
-                  <th style="text-align: right; width: 85px;">24h %</th>
-                  <th style="text-align: right; width: 85px;">7d %</th>
-                  <th style="text-align: right; width: 110px;">24h Volume</th>
-                  <th style="width: 140px;">Alpha Score</th>
-                </tr>
-              </thead>
-              <tbody id="momentum-tbody">
-                <!-- Dynamically populated by app.js -->
-              </tbody>
-            </table>
+          <!-- MASTER-DETAIL SPLIT WORKSPACE -->
+          <div class="screener-split-workspace">
+            <!-- Left Pane: Master Quant Table -->
+            <div class="table-master-pane">
+              <div class="table-card-wrapper">
+                <table class="quant-table font-mono" id="momentum-table">
+                  <thead>
+                    <tr>
+                      <th class="th-sortable" data-sort="rank" style="width: 55px;" aria-sort="ascending">
+                        <div class="th-content"><span>Rank</span><span class="sort-indicator">▲</span></div>
+                      </th>
+                      <th class="th-sortable" data-sort="symbol" style="width: 135px;" aria-sort="none">
+                        <div class="th-content"><span>Asset</span><span class="sort-indicator">↕</span></div>
+                      </th>
+                      <th class="th-sortable th-num" data-sort="price_usd" style="width: 105px;" aria-sort="none">
+                        <div class="th-content th-right"><span>Price (USD)</span><span class="sort-indicator">↕</span></div>
+                      </th>
+                      <th class="th-sortable th-num" data-sort="percent_change_24h" style="width: 90px;" aria-sort="none">
+                        <div class="th-content th-right"><span>24h %</span><span class="sort-indicator">↕</span></div>
+                      </th>
+                      <th class="th-sortable th-num" data-sort="percent_change_7d" style="width: 90px;" aria-sort="none">
+                        <div class="th-content th-right"><span>7d %</span><span class="sort-indicator">↕</span></div>
+                      </th>
+                      <th class="th-sortable th-num" data-sort="volume_24h_usd" style="width: 125px;" aria-sort="none">
+                        <div class="th-content th-right"><span>24h Vol (USD)</span><span class="sort-indicator">↕</span></div>
+                      </th>
+                      <th style="width: 80px; text-align: center;">
+                        <span>7d Trend</span>
+                      </th>
+                      <th class="th-sortable" data-sort="momentum_score" style="width: 155px;" aria-sort="descending">
+                        <div class="th-content">
+                          <span>Alpha Score (0-10)</span>
+                          <span class="methodology-trigger" id="btn-explain-alpha" title="Click to view Alpha Score institutional formula">ⓘ</span>
+                          <span class="sort-indicator">▼</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="momentum-tbody">
+                    <!-- Dynamically populated by app.js with clickable rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right Pane: Asset Score Breakdown & Diagnostic Detail -->
+            <aside class="inspector-detail-pane" id="master-detail-inspector" aria-label="Asset Score Breakdown">
+              <div class="detail-pane-header">
+                <div class="detail-asset-info">
+                  <div class="detail-symbol-row">
+                    <span class="detail-symbol" id="detail-symbol">SOL</span>
+                    <span class="detail-name" id="detail-name">Solana</span>
+                    <span class="detail-rank-badge font-mono" id="detail-rank">Rank #1</span>
+                  </div>
+                  <div class="detail-price-row font-mono">
+                    <span class="detail-price" id="detail-price">$148.50</span>
+                    <span class="detail-24h up font-bold" id="detail-24h">+5.10%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Alpha Score Meter & Scale Benchmark -->
+              <div class="detail-card">
+                <div class="detail-card-head">
+                  <span class="card-caption">Composite Alpha Score</span>
+                  <span class="score-fraction font-mono" id="detail-score-fraction">8.95 / 10.0</span>
+                </div>
+                <div class="meter-wrapper">
+                  <div class="meter-track">
+                    <div class="meter-fill" id="detail-meter-fill" style="width: 89.5%;"></div>
+                    <div class="meter-tick tick-25" title="Benchmark 2.5"></div>
+                    <div class="meter-tick tick-50" title="Benchmark 5.0"></div>
+                    <div class="meter-tick tick-75" title="Benchmark 7.5"></div>
+                  </div>
+                  <div class="meter-scale-labels font-mono">
+                    <span>0.0</span>
+                    <span>2.5</span>
+                    <span>5.0</span>
+                    <span>7.5</span>
+                    <span>10.0</span>
+                  </div>
+                </div>
+                <div class="meter-interpretation font-mono" id="detail-interpretation">
+                  <span class="status-dot-sm up"></span> Top 5% Decile · Exceptional Momentum & Liquidity
+                </div>
+              </div>
+
+              <!-- Multi-Factor Z-Score Contribution Breakdown -->
+              <div class="detail-card">
+                <div class="detail-card-head">
+                  <span class="card-caption">Z-Score Factor Contribution</span>
+                  <span class="card-sub-hint font-mono">Normalized Universe</span>
+                </div>
+                <div class="factor-breakdown-list font-mono">
+                  <div class="factor-row">
+                    <div class="factor-label-col">
+                      <span class="factor-name">24h Return Z-Score</span>
+                      <span class="factor-weight-pill">30% w</span>
+                    </div>
+                    <div class="factor-bar-col">
+                      <div class="factor-bar-track">
+                        <div class="factor-bar-fill up" id="factor-bar-24h" style="width: 78%;"></div>
+                      </div>
+                      <span class="factor-val" id="factor-val-24h">+1.82 &sigma;</span>
+                    </div>
+                  </div>
+
+                  <div class="factor-row">
+                    <div class="factor-label-col">
+                      <span class="factor-name">7d Return Z-Score</span>
+                      <span class="factor-weight-pill">50% w</span>
+                    </div>
+                    <div class="factor-bar-col">
+                      <div class="factor-bar-track">
+                        <div class="factor-bar-fill up" id="factor-bar-7d" style="width: 92%;"></div>
+                      </div>
+                      <span class="factor-val" id="factor-val-7d">+2.45 &sigma;</span>
+                    </div>
+                  </div>
+
+                  <div class="factor-row">
+                    <div class="factor-label-col">
+                      <span class="factor-name">Volume Velocity</span>
+                      <span class="factor-weight-pill">20% w</span>
+                    </div>
+                    <div class="factor-bar-col">
+                      <div class="factor-bar-track">
+                        <div class="factor-bar-fill up" id="factor-bar-vol" style="width: 65%;"></div>
+                      </div>
+                      <span class="factor-val" id="factor-val-vol">+1.24 &sigma;</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Risk & Execution Diagnostics -->
+              <div class="detail-card">
+                <div class="detail-card-head">
+                  <span class="card-caption">Volatility & Liquidity Diagnostics</span>
+                </div>
+                <div class="risk-meta-grid font-mono">
+                  <div class="risk-cell">
+                    <span class="risk-k">Parkinson &sigma;:</span>
+                    <span class="risk-v" id="detail-parkinson-val">1.21%</span>
+                  </div>
+                  <div class="risk-cell">
+                    <span class="risk-k">Regime:</span>
+                    <span class="risk-v regime-pill compression" id="detail-regime-pill">COMPRESSION</span>
+                  </div>
+                  <div class="risk-cell">
+                    <span class="risk-k">Turnover:</span>
+                    <span class="risk-v" id="detail-turnover-val">6.91%</span>
+                  </div>
+                  <div class="risk-cell">
+                    <span class="risk-k">Slippage Tier:</span>
+                    <span class="risk-v tier-pill minimal" id="detail-slippage-pill">MINIMAL</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Deep-Link Agent Interaction Action -->
+              <div class="detail-action-container">
+                <button class="action-btn-primary btn-full-width" id="btn-ask-anna-selected">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <span>Ask Anna why <span id="detail-action-symbol">SOL</span> ranks #1</span>
+                </button>
+              </div>
+            </aside>
           </div>
         </div>
       </section>
@@ -152,7 +364,7 @@
               <p class="panel-subheading">Intraday high/low extreme-value volatility estimation classifying market states into Compression, Trending, or Expansion.</p>
             </div>
             <button class="action-btn-primary" id="btn-refresh-volatility">
-              <span class="btn-spinner" id="volatility-spinner"></span>
+              <span class="btn-spinner hidden" id="volatility-spinner"></span>
               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
               <span>Recalculate</span>
             </button>
@@ -201,7 +413,7 @@
               <p class="panel-subheading">24h volume-to-market-cap ratio measuring liquidity velocity and execution slippage risk.</p>
             </div>
             <button class="action-btn-primary" id="btn-refresh-liquidity">
-              <span class="btn-spinner" id="liquidity-spinner"></span>
+              <span class="btn-spinner hidden" id="liquidity-spinner"></span>
               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
               <span>Refresh</span>
             </button>
@@ -228,7 +440,7 @@
         </div>
       </section>
 
-      <!-- PANEL 4: ASSET INSPECTOR -->
+      <!-- PANEL 4: ASSET INSPECTOR (STANDALONE TAB) -->
       <section class="terminal-panel" id="tab-inspector">
         <div class="panel-glass-surface">
           <div class="panel-headline-row">
@@ -255,9 +467,11 @@
     <!-- Terminal Footer -->
     <footer class="terminal-footer">
       <div class="footer-left">
-        <span class="compliance-tag">Institutional Quant</span>
+        <span class="compliance-tag font-mono">Data: CMC Enterprise Feed</span>
         <span class="bullet">&bull;</span>
-        <span class="footer-text">Parkinson Extreme-Value Volatility &middot; Cross-Sectional Alpha</span>
+        <span class="footer-text font-mono">Model: Parkinson Range Volatility &middot; Cross-Sectional Alpha</span>
+        <span class="bullet">&bull;</span>
+        <span class="footer-text font-mono">Status: Verified Deterministic</span>
       </div>
       <div class="footer-right">
         <button class="share-chat-btn" id="btn-post-anna-chat" title="Send quantitative alpha intelligence to Anna AI OS Agent Chat">
@@ -266,6 +480,116 @@
         </button>
       </div>
     </footer>
+  </div>
+
+  <!-- Interactive Quant Weights Modal (Popover) -->
+  <div class="modal-backdrop hidden" id="weights-modal" role="dialog" aria-modal="true" aria-labelledby="weights-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">⚖</span>
+          <h3 class="modal-title" id="weights-modal-title">Configure Multi-Factor Alpha Weights</h3>
+        </div>
+        <button class="modal-close-btn" id="btn-close-weights-modal" aria-label="Close weights modal">&times;</button>
+      </div>
+
+      <p class="modal-desc">
+        Select an audited quantitative strategy preset or dynamically tune factor weights. Total weights must sum to exactly 100%.
+      </p>
+
+      <!-- Presets Selector -->
+      <div class="weight-presets-grid font-mono">
+        <button class="preset-pill active" data-preset="balanced">
+          <span class="preset-name">Balanced (Default)</span>
+          <span class="preset-detail">30% / 50% / 20%</span>
+        </button>
+        <button class="preset-pill" data-preset="short-term">
+          <span class="preset-name">Short-Term Momentum</span>
+          <span class="preset-detail">60% / 30% / 10%</span>
+        </button>
+        <button class="preset-pill" data-preset="macro-trend">
+          <span class="preset-name">Macro Trend</span>
+          <span class="preset-detail">15% / 70% / 15%</span>
+        </button>
+        <button class="preset-pill" data-preset="liquidity-first">
+          <span class="preset-name">Liquidity First</span>
+          <span class="preset-detail">20% / 40% / 40%</span>
+        </button>
+      </div>
+
+      <!-- Linked Sliders -->
+      <div class="weight-sliders-stack font-mono">
+        <div class="slider-group">
+          <div class="slider-header">
+            <span class="slider-label">24h Return Weight:</span>
+            <span class="slider-value" id="val-weight-24h">30%</span>
+          </div>
+          <input type="range" min="0" max="100" value="30" class="hud-range" id="range-weight-24h" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span class="slider-label">7d Return Weight:</span>
+            <span class="slider-value" id="val-weight-7d">50%</span>
+          </div>
+          <input type="range" min="0" max="100" value="50" class="hud-range" id="range-weight-7d" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span class="slider-label">Volume Weight:</span>
+            <span class="slider-value" id="val-weight-vol">20%</span>
+          </div>
+          <input type="range" min="0" max="100" value="20" class="hud-range" id="range-weight-vol" />
+        </div>
+      </div>
+
+      <!-- Sum & Validation Status -->
+      <div class="modal-footer font-mono">
+        <div class="weights-sum-indicator">
+          <span>Total Weight:</span>
+          <span class="weights-sum-val up font-bold" id="weights-sum-val">100%</span>
+        </div>
+        <div class="modal-actions">
+          <button class="action-btn-ghost" id="btn-cancel-weights">Cancel</button>
+          <button class="action-btn-primary" id="btn-save-weights">Apply Weights</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alpha Score Methodology Explainer Modal -->
+  <div class="modal-backdrop hidden" id="methodology-modal" role="dialog" aria-modal="true" aria-labelledby="methodology-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">ⓘ</span>
+          <h3 class="modal-title" id="methodology-modal-title">Alpha Score Quantitative Methodology</h3>
+        </div>
+        <button class="modal-close-btn" id="btn-close-methodology-modal" aria-label="Close methodology modal">&times;</button>
+      </div>
+
+      <div class="methodology-body">
+        <p class="methodology-p">
+          The <strong>Alpha Score (0.0 to 10.0)</strong> is an institutional cross-sectional metric that standardizes and combines short-term return velocity, medium-term momentum persistence, and trading liquidity.
+        </p>
+
+        <div class="formula-box font-mono">
+          $$\text{Alpha Score} = \text{Scale}_{0-10}\left( w_{24} \cdot Z_{24h} + w_{7d} \cdot Z_{7d} + w_{\text{vol}} \cdot Z_{\ln(\text{vol})} \right)$$
+        </div>
+
+        <div class="scale-table font-mono">
+          <div class="scale-row header"><span class="col-range">Range</span><span class="col-tier">Regime Tier</span><span class="col-action">Trading Interpretation</span></div>
+          <div class="scale-row"><span class="col-range up">&gt; 7.50</span><span class="col-tier up font-bold">Strong Momentum</span><span>High relative strength with liquidity backing; breakout candidates.</span></div>
+          <div class="scale-row"><span class="col-range">5.00 – 7.50</span><span class="col-tier font-bold">Directional Equilibrium</span><span>Healthy trend continuation; standard tracking position.</span></div>
+          <div class="scale-row"><span class="col-range down">&lt; 5.00</span><span class="col-tier down font-bold">Lagging / Compression</span><span>Underperforming the broad market peer group; wait for signal confirmation.</span></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-btn-primary btn-full-width" id="btn-close-methodology-ok">Got it</button>
+      </div>
+    </div>
   </div>
 
   <script src="anna-tool-ids.js" defer></script>

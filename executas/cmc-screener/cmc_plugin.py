@@ -24,7 +24,7 @@ DEFAULT_BASE_URL = "https://pro-api.coinmarketcap.com"
 
 MANIFEST: Dict[str, Any] = {
     "display_name": "CMC Alpha Screener",
-    "version": "1.0.6",
+    "version": "1.0.9",
     "description": (
         "Institutional quantitative crypto intelligence, cross-sectional momentum screening, "
         "Parkinson realized volatility regime detection, and liquidity analytics."
@@ -199,17 +199,12 @@ def action_momentum(top_n: int = 10, min_volume_usd: float = 50_000_000.0) -> Di
     }
 
 
-def action_volatility(symbol: str = "BTC") -> Dict[str, Any]:
-    assert isinstance(symbol, str), "symbol must be string"
-    clean_sym = symbol.strip().upper()
-    assert len(clean_sym) > 0, "symbol cannot be empty"
-    listings = DATA_SOURCE.fetch_listings(limit=50)
-    match = next((i for i in listings if str(i.get("symbol", "")).upper() == clean_sym), None)
-    if not match:
-        match = listings[0]
-        clean_sym = str(match["symbol"]).upper()
-    high = float(match.get("high_24h_usd") or match["price_usd"])
-    low = float(match.get("low_24h_usd") or match["price_usd"])
+def _format_volatility_item(item: Dict[str, Any]) -> Dict[str, Any]:
+    assert isinstance(item, dict), "item must be a dict"
+    price = float(item.get("price_usd", 0.0))
+    high = float(item.get("high_24h_usd") or price)
+    low = float(item.get("low_24h_usd") or price)
+    assert high >= low or low > 0, "price sanity"
     parkinson = calc_parkinson_volatility(high, low)
     ann_vol = parkinson * math.sqrt(365.0)
     if parkinson < 0.025:
@@ -218,48 +213,100 @@ def action_volatility(symbol: str = "BTC") -> Dict[str, Any]:
         regime, risk = "TRENDING (Directional)", "MODERATE"
     else:
         regime, risk = "EXPANSION_VOLATILE (Turbulent)", "HIGH"
+    vol_val = round(parkinson, 4)
     return {
-        "action": "volatility",
-        "data_source": DATA_SOURCE.last_source,
-        "symbol": clean_sym,
-        "price_usd": match["price_usd"],
-        "low_24h_usd": low,
+        "symbol": str(item.get("symbol", "")).upper(),
+        "name": str(item.get("name", "")),
+        "price_usd": price,
         "high_24h_usd": high,
-        "parkinson_vol": round(parkinson, 6),
+        "high_24h": high,
+        "low_24h_usd": low,
+        "low_24h": low,
+        "parkinson_vol": vol_val,
+        "parkinson_volatility": vol_val,
         "annualized_vol": round(ann_vol, 4),
         "regime": regime,
         "risk_level": risk,
     }
 
 
-def action_liquidity(symbol: str = "BTC") -> Dict[str, Any]:
+def action_volatility(symbol: str = "ALL") -> Dict[str, Any]:
     assert isinstance(symbol, str), "symbol must be string"
     clean_sym = symbol.strip().upper()
-    assert len(clean_sym) > 0, "symbol cannot be empty"
     listings = DATA_SOURCE.fetch_listings(limit=50)
-    match = next((i for i in listings if str(i.get("symbol", "")).upper() == clean_sym), None)
+    assert len(listings) > 0, "listings must not be empty"
+    vol_assets = [_format_volatility_item(it) for it in listings[:10]]
+    if clean_sym in ("", "ALL"):
+        first = vol_assets[0]
+        return {
+            "action": "volatility",
+            "data_source": DATA_SOURCE.last_source,
+            "assets": vol_assets,
+            **first,
+        }
+    match = next((v for v in vol_assets if v["symbol"] == clean_sym), None)
     if not match:
-        match = listings[0]
-        clean_sym = str(match["symbol"]).upper()
-    vol = float(match.get("volume_24h_usd") or 0.0)
-    mcap = float(match.get("market_cap_usd") or 0.0)
-    turnover = (vol / mcap) if mcap > 0.0 else 0.0
-    if turnover >= 0.10:
-        grade, slippage = "INSTITUTIONAL_DEEP", "< 2 bps"
-    elif turnover >= 0.03:
-        grade, slippage = "LIQUID_MIDCAP", "2 - 6 bps"
-    else:
-        grade, slippage = "THIN_SPECULATIVE", "> 12 bps"
+        match_raw = next((i for i in listings if str(i.get("symbol", "")).upper() == clean_sym), listings[0])
+        match = _format_volatility_item(match_raw)
     return {
-        "action": "liquidity",
+        "action": "volatility",
         "data_source": DATA_SOURCE.last_source,
-        "symbol": clean_sym,
-        "price_usd": match["price_usd"],
+        "assets": vol_assets,
+        **match,
+    }
+
+
+def _format_liquidity_item(item: Dict[str, Any]) -> Dict[str, Any]:
+    assert isinstance(item, dict), "item must be a dict"
+    vol = float(item.get("volume_24h_usd") or 0.0)
+    mcap = float(item.get("market_cap_usd") or 0.0)
+    assert vol >= 0.0, "volume cannot be negative"
+    turnover = (vol / mcap) if mcap > 0.0 else 0.0
+    if turnover >= 0.05:
+        tier, grade, slippage, risk = "HIGH_VELOCITY (<0.05%)", "INSTITUTIONAL_DEEP", "< 2 bps", "MODERATE"
+    elif turnover >= 0.02:
+        tier, grade, slippage, risk = "LOW_SLIPPAGE (<0.03%)", "LIQUID_MIDCAP", "2 - 6 bps", "MINIMAL"
+    else:
+        tier, grade, slippage, risk = "THIN_SPECULATIVE (>0.10%)", "THIN_SPECULATIVE", "> 12 bps", "HIGH"
+    return {
+        "symbol": str(item.get("symbol", "")).upper(),
+        "name": str(item.get("name", "")),
+        "price_usd": float(item.get("price_usd") or 0.0),
         "volume_24h_usd": vol,
         "market_cap_usd": mcap,
         "turnover_ratio": round(turnover, 4),
+        "turnover_tier": tier,
         "liquidity_grade": grade,
+        "grade": grade,
+        "slippage_risk": risk,
         "slippage_est": slippage,
+        "slippage": slippage,
+    }
+
+
+def action_liquidity(symbol: str = "ALL") -> Dict[str, Any]:
+    assert isinstance(symbol, str), "symbol must be string"
+    clean_sym = symbol.strip().upper()
+    listings = DATA_SOURCE.fetch_listings(limit=50)
+    assert len(listings) > 0, "listings must not be empty"
+    liq_assets = [_format_liquidity_item(it) for it in listings[:10]]
+    if clean_sym in ("", "ALL"):
+        first = liq_assets[0]
+        return {
+            "action": "liquidity",
+            "data_source": DATA_SOURCE.last_source,
+            "assets": liq_assets,
+            **first,
+        }
+    match = next((v for v in liq_assets if v["symbol"] == clean_sym), None)
+    if not match:
+        match_raw = next((i for i in listings if str(i.get("symbol", "")).upper() == clean_sym), listings[0])
+        match = _format_liquidity_item(match_raw)
+    return {
+        "action": "liquidity",
+        "data_source": DATA_SOURCE.last_source,
+        "assets": liq_assets,
+        **match,
     }
 
 
@@ -295,28 +342,47 @@ def action_quote(symbol: str = "BTC") -> Dict[str, Any]:
     if not match:
         match = listings[0]
         clean_sym = str(match["symbol"]).upper()
+    price = float(match.get("price_usd", 0.0))
+    high = float(match.get("high_24h_usd") or price)
+    low = float(match.get("low_24h_usd") or price)
+    parkinson = calc_parkinson_volatility(high, low)
+    regime = "COMPRESSION" if parkinson < 0.025 else ("TRENDING" if parkinson <= 0.050 else "EXPANSION_VOLATILE")
+    score = calc_momentum_score(
+        float(match.get("percent_change_24h") or 0.0),
+        float(match.get("percent_change_7d") or 0.0),
+        float(match.get("volume_24h_usd") or 0.0),
+        float(match.get("market_cap_usd") or 0.0),
+    )
     return {
         "action": "quote",
         "data_source": DATA_SOURCE.last_source,
         "symbol": clean_sym,
         "name": match.get("name", ""),
-        "price_usd": match.get("price_usd", 0.0),
+        "price_usd": price,
+        "high_24h_usd": high,
+        "high_24h": high,
+        "low_24h_usd": low,
+        "low_24h": low,
         "percent_change_24h": match.get("percent_change_24h", 0.0),
         "percent_change_7d": match.get("percent_change_7d", 0.0),
         "volume_24h_usd": match.get("volume_24h_usd", 0.0),
         "market_cap_usd": match.get("market_cap_usd", 0.0),
+        "momentum_score": round(score, 2),
+        "regime": regime,
         "circulating_supply": match.get("circulating_supply", 0.0),
     }
 
 
+
 def tool_screener(
-    action: str,
+    action: str = "momentum",
     top_n: int = 10,
     min_volume_usd: float = 50_000_000.0,
     symbol: str = "BTC",
+    **_kwargs: Any,
 ) -> Dict[str, Any]:
     assert isinstance(action, str), "action must be string"
-    act = action.strip().lower()
+    act = (action or "momentum").strip().lower()
     if act == "momentum":
         return action_momentum(int(top_n), float(min_volume_usd))
     if act == "volatility":
@@ -338,10 +404,27 @@ def handle_describe(_params: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def handle_invoke(params: Dict[str, Any]) -> Dict[str, Any]:
-    tool_name = params.get("tool")
-    args = params.get("arguments") or {}
+    assert isinstance(params, dict), "params must be a dictionary"
+    tool_name = (
+        params.get("tool")
+        or params.get("name")
+        or params.get("method")
+        or "screener"
+    )
+    args = (
+        params.get("arguments")
+        or params.get("args")
+        or params.get("parameters")
+    )
+    if args is None or not isinstance(args, dict):
+        args = {
+            k: v for k, v in params.items()
+            if k not in ("tool", "name", "method", "tool_id", "timeoutMs")
+        }
     assert isinstance(args, dict), "`arguments` must be an object"
-    fn = TOOL_DISPATCH.get(tool_name or "")
+    if not tool_name:
+        tool_name = "screener"
+    fn = TOOL_DISPATCH.get(tool_name)
     if fn is None:
         raise ValueError(f"unknown tool: {tool_name!r}")
     try:

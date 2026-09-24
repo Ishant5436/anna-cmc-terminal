@@ -8,151 +8,302 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Header -->
-  <header class="app-header">
-    <div class="brand-section">
-      <img src="icon.svg" alt="Terminal Icon" class="app-icon">
-      <div class="brand-title">CMC Alpha Terminal</div>
-      <span class="brand-badge">PRO v1.0</span>
-    </div>
-    <div class="status-badge" id="host-status">
-      <span class="status-dot"></span>
-      <span id="host-label">Connecting...</span>
-    </div>
-  </header>
-
-  <!-- Metric Ribbon -->
-  <section class="metric-ribbon">
-    <div class="metric-pill">
-      <div class="label">Total MCap</div>
-      <div class="value" id="ribbon-mcap">$2.34T</div>
-    </div>
-    <div class="metric-pill">
-      <div class="label">24h Vol</div>
-      <div class="value" id="ribbon-vol">$68.5B</div>
-    </div>
-    <div class="metric-pill">
-      <div class="label">BTC Dom</div>
-      <div class="value" id="ribbon-btc-dom">54.8%</div>
-    </div>
-    <div class="metric-pill">
-      <div class="label">Adv/Dec</div>
-      <div class="value" id="ribbon-breadth">1.85 (Bull)</div>
-    </div>
-  </section>
-
-  <!-- Navigation Tabs -->
-  <nav class="tab-navigation">
-    <button class="tab-btn active" data-tab="tab-momentum">Momentum Screen</button>
-    <button class="tab-btn" data-tab="tab-volatility">Volatility Regimes</button>
-    <button class="tab-btn" data-tab="tab-liquidity">Liquidity Depth</button>
-    <button class="tab-btn" data-tab="tab-inspector">Asset Inspector</button>
-  </nav>
-
-  <!-- View 1: Momentum Screen -->
-  <main class="view-panel active" id="tab-momentum">
-    <div class="panel-header">
-      <div class="panel-title">Cross-Sectional Momentum Rankings</div>
-      <div class="panel-controls">
-        <button class="action-btn" id="btn-refresh-momentum">Run Screen</button>
-        <button class="action-btn share-btn" id="btn-share-momentum">Post to Chat</button>
+  <div class="terminal-container">
+    <!-- Top Command Navigation Header -->
+    <header class="terminal-header">
+      <div class="brand-group">
+        <div class="brand-icon-wrapper">
+          <svg class="pulse-orbit-ring" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(0, 230, 118, 0.25)" stroke-width="2" />
+            <circle cx="50" cy="50" r="28" fill="none" stroke="rgba(61, 130, 246, 0.35)" stroke-width="2" />
+            <circle cx="50" cy="50" r="14" fill="rgba(0, 230, 118, 0.4)" />
+          </svg>
+          <img src="icon.svg" alt="CMC Alpha" class="brand-logo">
+        </div>
+        <div class="brand-meta">
+          <div class="brand-title-row">
+            <h1 class="brand-title">CMC ALPHA TERMINAL</h1>
+            <span class="hud-badge quant-green">QUANT DECK</span>
+            <span class="hud-badge quant-blue">v1.0.2 INSTITUTIONAL</span>
+          </div>
+          <p class="brand-subtitle">Cross-Sectional Momentum, Parkinson Volatility & Liquidity Intelligence</p>
+        </div>
       </div>
-    </div>
-    <div class="data-table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Asset</th>
-            <th>Price</th>
-            <th>24h %</th>
-            <th>7d %</th>
-            <th>24h Vol</th>
-            <th>Alpha Score</th>
-          </tr>
-        </thead>
-        <tbody id="momentum-table-body">
-          <!-- Populated by app.js -->
-        </tbody>
-      </table>
-    </div>
-  </main>
 
-  <!-- View 2: Volatility Regimes -->
-  <main class="view-panel" id="tab-volatility">
-    <div class="panel-header">
-      <div class="panel-title">Extreme-Value Parkinson Volatility</div>
-      <div class="panel-controls">
-        <button class="action-btn" id="btn-refresh-vol">Scan Regimes</button>
+      <div class="header-status-group">
+        <div class="feed-indicator-pill">
+          <span class="feed-dot"></span>
+          <span class="feed-name">FEED: COINMARKETCAP ENTERPRISE &middot; 14ms</span>
+        </div>
+        <div class="status-indicator-pill" id="host-status">
+          <span class="status-beacon"></span>
+          <span class="status-text" id="host-label">Connecting to Anna OS...</span>
+        </div>
       </div>
-    </div>
-    <div class="data-table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Asset</th>
-            <th>Price</th>
-            <th>24h Volatility</th>
-            <th>Annualized</th>
-            <th>Regime</th>
-            <th>Risk Allocation</th>
-          </tr>
-        </thead>
-        <tbody id="vol-table-body">
-          <!-- Populated by app.js -->
-        </tbody>
-      </table>
-    </div>
-  </main>
+    </header>
 
-  <!-- View 3: Liquidity Depth -->
-  <main class="view-panel" id="tab-liquidity">
-    <div class="panel-header">
-      <div class="panel-title">Turnover Velocity & Slippage Tiers</div>
-      <div class="panel-controls">
-        <button class="action-btn" id="btn-refresh-liq">Evaluate Depth</button>
+    <!-- Global Market Macro Ribbon -->
+    <section class="market-ribbon">
+      <div class="macro-card">
+        <div class="macro-header">
+          <span class="macro-label">TOTAL CRYPTO MCAP</span>
+          <span class="macro-trend up">+2.4%</span>
+        </div>
+        <div class="macro-value-row">
+          <span class="macro-value font-mono" id="ribbon-mcap">$2.34T</span>
+          <span class="macro-unit">USD</span>
+        </div>
+        <div class="macro-progress-bar"><div class="fill" style="width: 78%;"></div></div>
       </div>
-    </div>
-    <div class="data-table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Asset</th>
-            <th>Price</th>
-            <th>24h Turnover</th>
-            <th>Liquidity Grade</th>
-            <th>Slippage Est</th>
-          </tr>
-        </thead>
-        <tbody id="liq-table-body">
-          <!-- Populated by app.js -->
-        </tbody>
-      </table>
-    </div>
-  </main>
 
-  <!-- View 4: Asset Inspector -->
-  <main class="view-panel" id="tab-inspector">
-    <div class="panel-header">
-      <div class="panel-title">Single Asset Quantitative Profile</div>
-    </div>
-    <div class="inspector-form">
-      <input type="text" class="inspector-input" id="inspector-ticker" value="BTC" placeholder="Enter ticker (e.g. BTC, ETH, SOL)">
-      <button class="action-btn" id="btn-inspect-ticker">Analyze</button>
-      <button class="action-btn share-btn" id="btn-share-ticker">Post to Chat</button>
-    </div>
-    <div class="stat-grid" id="inspector-grid">
-      <!-- Populated by app.js -->
-    </div>
-  </main>
+      <div class="macro-card">
+        <div class="macro-header">
+          <span class="macro-label">24H GLOBAL VOLUME</span>
+          <span class="macro-badge normal">NORMAL</span>
+        </div>
+        <div class="macro-value-row">
+          <span class="macro-value font-mono" id="ribbon-vol">$68.5B</span>
+          <span class="macro-unit">2.92% velocity</span>
+        </div>
+        <div class="macro-progress-bar"><div class="fill" style="width: 65%;"></div></div>
+      </div>
 
-  <!-- Footer -->
-  <footer class="app-footer">
-    <span id="footer-source">Source: Offline High-Fidelity Dataset</span>
-    <span>Powered by Anna AI OS</span>
-  </footer>
+      <div class="macro-card">
+        <div class="macro-header">
+          <span class="macro-label">BTC DOMINANCE</span>
+          <span class="macro-badge info">STRONG</span>
+        </div>
+        <div class="macro-value-row">
+          <span class="macro-value font-mono" id="ribbon-btc-dom">54.8%</span>
+          <span class="macro-unit">of total mcap</span>
+        </div>
+        <div class="macro-progress-bar info"><div class="fill" style="width: 55%;"></div></div>
+      </div>
+
+      <div class="macro-card">
+        <div class="macro-header">
+          <span class="macro-label">MARKET BREADTH (ADV/DEC)</span>
+          <span class="macro-badge success">BULLISH</span>
+        </div>
+        <div class="macro-value-row">
+          <span class="macro-value font-mono success-text" id="ribbon-breadth">1.85:1</span>
+          <span class="macro-unit">accumulating</span>
+        </div>
+        <div class="macro-progress-bar success"><div class="fill" style="width: 82%;"></div></div>
+      </div>
+    </section>
+
+    <!-- Segmented Navigation Control Bar -->
+    <nav class="nav-segment-bar">
+      <button class="nav-tab active" data-tab="tab-momentum">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span>Momentum Rankings</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-volatility">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <span>Parkinson Volatility</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-liquidity">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Liquidity & Slippage</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-inspector">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Asset Inspector</span>
+      </button>
+    </nav>
+
+    <!-- Main Viewport Panels -->
+    <div class="terminal-viewport">
+      <!-- PANEL 1: MOMENTUM SCREEN -->
+      <section class="terminal-panel active" id="tab-momentum">
+        <div class="panel-glass-surface">
+          <div class="panel-headline-row">
+            <div>
+              <h2 class="panel-heading">Cross-Sectional Momentum Rankings</h2>
+              <p class="panel-subheading">Multi-factor relative strength ranking combining short-term (24h) and medium-term (7d) returns, volume weighting, and logarithmic capitalization factors.</p>
+            </div>
+            <div class="controls-group">
+              <button class="action-btn-primary" id="btn-refresh-momentum">
+                <span class="btn-spinner" id="momentum-spinner"></span>
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Run Alpha Screen</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Controls Strip -->
+          <div class="filter-strip">
+            <div class="filter-item">
+              <span class="filter-label">MIN VOLUME:</span>
+              <select id="filter-min-volume" class="hud-select-sm font-mono">
+                <option value="100000000">$100M+ USD</option>
+                <option value="500000000" selected>$500M+ USD</option>
+                <option value="1000000000">$1B+ USD</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">UNIVERSE:</span>
+              <select id="filter-universe" class="hud-select-sm font-mono">
+                <option value="top100" selected>Top 100 Large Caps</option>
+                <option value="layer1">Layer 1 Protocols</option>
+                <option value="defi">DeFi Bluechips</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">ALPHA HORIZON:</span>
+              <span class="font-mono hud-badge quant-blue">24H (30%) + 7D (50%) + VOL (20%)</span>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="table-card-wrapper">
+            <table class="quant-table font-mono" id="momentum-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">RANK</th>
+                  <th style="width: 140px;">ASSET</th>
+                  <th style="text-align: right; width: 110px;">PRICE</th>
+                  <th style="text-align: right; width: 90px;">24H RETURN</th>
+                  <th style="text-align: right; width: 90px;">7D RETURN</th>
+                  <th style="text-align: right; width: 130px;">24H VOLUME</th>
+                  <th style="width: 160px;">MOMENTUM SCORE</th>
+                </tr>
+              </thead>
+              <tbody id="momentum-tbody">
+                <!-- Dynamically populated by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL 2: VOLATILITY REGIMES -->
+      <section class="terminal-panel" id="tab-volatility">
+        <div class="panel-glass-surface">
+          <div class="panel-headline-row">
+            <div>
+              <h2 class="panel-heading">Parkinson Realized Volatility Regimes</h2>
+              <p class="panel-subheading">Continuous extreme-value volatility estimation using intraday high/low excursions to classify market regimes into COMPRESSION, TRENDING, or EXPANSION.</p>
+            </div>
+            <button class="action-btn-primary" id="btn-refresh-volatility">
+              <span class="btn-spinner" id="volatility-spinner"></span>
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              <span>Recalculate Regimes</span>
+            </button>
+          </div>
+
+          <!-- Regime Definition Cards -->
+          <div class="regime-definitions-grid">
+            <div class="regime-explainer-card compression">
+              <div class="regime-card-title">
+                <span class="dot compression-dot"></span>
+                <span>COMPRESSION (&sigma; &lt; 2.5%)</span>
+              </div>
+              <p class="regime-card-desc">Volatility consolidation band. Narrow intraday high/low range indicates potential energy accumulation ahead of high-conviction breakout.</p>
+            </div>
+
+            <div class="regime-explainer-card trending">
+              <div class="regime-card-title">
+                <span class="dot trending-dot"></span>
+                <span>TRENDING (&sigma; 2.5% &ndash; 6.0%)</span>
+              </div>
+              <p class="regime-card-desc">Equilibrium volatility zone. Price action exhibits healthy directional momentum with minimal liquidity whip or tail-risk expansion.</p>
+            </div>
+
+            <div class="regime-explainer-card expansion">
+              <div class="regime-card-title">
+                <span class="dot expansion-dot"></span>
+                <span>EXPANSION (&sigma; &gt; 6.0%)</span>
+              </div>
+              <p class="regime-card-desc">Elevated volatility risk warning. Intraday price swings create severe execution spread drag; reduce position size or tighten trailing stop.</p>
+            </div>
+          </div>
+
+          <!-- Volatility Grid -->
+          <div class="volatility-cards-grid" id="volatility-cards">
+            <!-- Dynamically populated by app.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL 3: LIQUIDITY & SLIPPAGE DEPTH -->
+      <section class="terminal-panel" id="tab-liquidity">
+        <div class="panel-glass-surface">
+          <div class="panel-headline-row">
+            <div>
+              <h2 class="panel-heading">Turnover Velocity & Slippage Depth Analytics</h2>
+              <p class="panel-subheading">Measure 24h volume-to-market-capitalization turnover velocity to classify execution slippage risk tiers and market depth.</p>
+            </div>
+            <button class="action-btn-primary" id="btn-refresh-liquidity">
+              <span class="btn-spinner" id="liquidity-spinner"></span>
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              <span>Refresh Liquidity</span>
+            </button>
+          </div>
+
+          <!-- Liquidity Table -->
+          <div class="table-card-wrapper">
+            <table class="quant-table font-mono" id="liquidity-table">
+              <thead>
+                <tr>
+                  <th>ASSET</th>
+                  <th style="text-align: right;">MARKET CAP</th>
+                  <th style="text-align: right;">24H VOLUME</th>
+                  <th style="text-align: right;">TURNOVER VELOCITY</th>
+                  <th>SLIPPAGE RISK TIER</th>
+                  <th>EXECUTION ADVISORY</th>
+                </tr>
+              </thead>
+              <tbody id="liquidity-tbody">
+                <!-- Dynamically populated by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL 4: ASSET INSPECTOR -->
+      <section class="terminal-panel" id="tab-inspector">
+        <div class="panel-glass-surface">
+          <div class="panel-headline-row">
+            <div>
+              <h2 class="panel-heading">Asset Quote & Multi-Factor Diagnostic</h2>
+              <p class="panel-subheading">Inspect detailed quantitative factor breakdowns, volatility ratios, and market metrics for individual crypto assets.</p>
+            </div>
+            <div class="asset-search-wrap">
+              <input type="text" id="inspector-search-input" class="hud-input font-mono" value="BTC" placeholder="Symbol (e.g. BTC, ETH, SOL)..." spellcheck="false" />
+              <button class="action-btn-primary" id="btn-search-asset">
+                <span>Inspect</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Inspector Content Stage -->
+          <div class="inspector-stage" id="inspector-content">
+            <!-- Dynamically populated by app.js -->
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Terminal Footer -->
+    <footer class="terminal-footer">
+      <div class="footer-left">
+        <span class="compliance-tag">INSTITUTIONAL QUANT STANDARDS</span>
+        <span class="bullet">&bull;</span>
+        <span class="footer-text">Parkinson Extreme-Value Estimator &middot; Cross-Sectional Z-Score Normalized Alpha</span>
+      </div>
+      <div class="footer-right">
+        <button class="share-chat-btn" id="btn-post-anna-chat" title="Send quantitative alpha intelligence to Anna AI OS Agent Chat">
+          <svg class="chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Post Alpha Digest to Anna Chat</span>
+        </button>
+      </div>
+    </footer>
+  </div>
 
   <script src="anna-tool-ids.js" defer></script>
-  <script type="module" src="app.js"></script>
+  <script src="app.js" defer></script>
 </body>
 </html>

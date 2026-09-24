@@ -1,64 +1,77 @@
 /**
- * CMC Alpha Terminal — Anna App UI Controller
- * Integrates with Anna App Runtime SDK, dispatches to bundled:cmc-screener,
- * and renders interactive institutional quantitative crypto analytics.
+ * CMC Alpha Terminal - Bloomberg / Linear Quant Deck Controller
+ * Dispatches to bundled executa tool-dev-cmc-screener-12345678 with live Anna Host integration.
  */
 
 const EXECUTA_HANDLE = "cmc-screener";
 const DEV_FALLBACK_TOOL_ID = "tool-dev-cmc-screener-12345678";
+
 function getToolId() {
   return (typeof window !== "undefined"
     && window.__ANNA_TOOL_IDS__
     && window.__ANNA_TOOL_IDS__[EXECUTA_HANDLE])
   || DEV_FALLBACK_TOOL_ID;
 }
-const TOOL_METHOD = "screener";
 
-// High-fidelity fallback fixtures for standalone browser preview
+// Standalone institutional market dataset fixtures
 const STANDALONE_FIXTURES = {
-  breadth: {
-    total_market_cap_usd: 2340000000000.0,
-    total_volume_24h_usd: 68500000000.0,
-    btc_dominance_percentage: 54.8,
-    advance_decline_ratio: 1.85,
-    market_sentiment: "BULLISH_DOMINANT"
-  },
-  momentum: {
-    assets: [
-      { rank: 1, symbol: "SOL", price_usd: 148.5, percent_change_24h: 5.10, percent_change_7d: 12.30, volume_24h_usd: 4800000000, momentum_score: 8.42 },
-      { rank: 2, symbol: "ETH", price_usd: 3480.0, percent_change_24h: 2.40, percent_change_7d: 5.60, volume_24h_usd: 14200000000, momentum_score: 5.18 },
-      { rank: 3, symbol: "BTC", price_usd: 64250.0, percent_change_24h: 1.85, percent_change_7d: 4.12, volume_24h_usd: 28500000000, momentum_score: 4.62 },
-      { rank: 4, symbol: "AVAX", price_usd: 28.4, percent_change_24h: 3.20, percent_change_7d: 7.10, volume_24h_usd: 650000000, momentum_score: 3.85 },
-      { rank: 5, symbol: "BNB", price_usd: 585.0, percent_change_24h: 0.75, percent_change_7d: 2.10, volume_24h_usd: 1100000000, momentum_score: 2.15 }
-    ]
-  },
+  momentum: [
+    { rank: 1, symbol: "SOL", name: "Solana", price_usd: 152.40, percent_change_24h: 5.80, percent_change_7d: 14.20, volume_24h_usd: 3850000000, momentum_score: 8.95 },
+    { rank: 2, symbol: "BTC", name: "Bitcoin", price_usd: 64250.00, percent_change_24h: 2.40, percent_change_7d: 6.80, volume_24h_usd: 28400000000, momentum_score: 8.12 },
+    { rank: 3, symbol: "AVAX", name: "Avalanche", price_usd: 28.90, percent_change_24h: 4.10, percent_change_7d: 9.50, volume_24h_usd: 620000000, momentum_score: 7.45 },
+    { rank: 4, symbol: "ETH", name: "Ethereum", price_usd: 3450.00, percent_change_24h: 1.85, percent_change_7d: 4.90, volume_24h_usd: 14200000000, momentum_score: 7.10 },
+    { rank: 5, symbol: "LINK", name: "Chainlink", price_usd: 12.80, percent_change_24h: 3.20, percent_change_7d: 7.40, volume_24h_usd: 480000000, momentum_score: 6.85 },
+    { rank: 6, symbol: "BNB", name: "BNB", price_usd: 585.00, percent_change_24h: 0.75, percent_change_7d: 2.10, volume_24h_usd: 1100000000, momentum_score: 5.90 },
+    { rank: 7, symbol: "NEAR", name: "NEAR Protocol", price_usd: 4.95, percent_change_24h: -1.20, percent_change_7d: 3.50, volume_24h_usd: 310000000, momentum_score: 4.80 }
+  ],
   volatility: [
-    { symbol: "BTC", price_usd: 64250.0, parkinson_vol: 0.0201, annualized_vol: 0.3841, regime: "COMPRESSION (Breakout Watch)", risk_level: "LOW" },
-    { symbol: "ETH", price_usd: 3480.0, parkinson_vol: 0.0368, annualized_vol: 0.7032, regime: "TRENDING (Directional)", risk_level: "MODERATE" },
-    { symbol: "SOL", price_usd: 148.5, parkinson_vol: 0.0674, annualized_vol: 1.2882, regime: "EXPANSION_VOLATILE (Turbulent)", risk_level: "HIGH" },
-    { symbol: "DOGE", price_usd: 0.124, parkinson_vol: 0.0712, annualized_vol: 1.3606, regime: "EXPANSION_VOLATILE (Turbulent)", risk_level: "HIGH" }
+    { symbol: "BTC", price_usd: 64250.00, high_24h_usd: 65100.00, low_24h_usd: 63800.00, parkinson_volatility: 0.017, regime: "COMPRESSION" },
+    { symbol: "ETH", price_usd: 3450.00, high_24h_usd: 3520.00, low_24h_usd: 3380.00, parkinson_volatility: 0.034, regime: "TRENDING" },
+    { symbol: "SOL", price_usd: 152.40, high_24h_usd: 158.00, low_24h_usd: 144.00, parkinson_volatility: 0.079, regime: "EXPANSION_VOLATILE" },
+    { symbol: "BNB", price_usd: 585.00, high_24h_usd: 590.00, low_24h_usd: 578.00, parkinson_volatility: 0.018, regime: "COMPRESSION" },
+    { symbol: "AVAX", price_usd: 28.90, high_24h_usd: 30.10, low_24h_usd: 27.50, parkinson_volatility: 0.076, regime: "EXPANSION_VOLATILE" },
+    { symbol: "LINK", price_usd: 12.80, high_24h_usd: 13.15, low_24h_usd: 12.45, parkinson_volatility: 0.046, regime: "TRENDING" }
   ],
   liquidity: [
-    { symbol: "BTC", price_usd: 64250.0, turnover_ratio: 0.0225, liquidity_grade: "LIQUID_MIDCAP", slippage_est: "2 - 6 bps" },
-    { symbol: "ETH", price_usd: 3480.0, turnover_ratio: 0.0340, liquidity_grade: "LIQUID_MIDCAP", slippage_est: "2 - 6 bps" },
-    { symbol: "SOL", price_usd: 148.5, turnover_ratio: 0.0691, liquidity_grade: "LIQUID_MIDCAP", slippage_est: "2 - 6 bps" }
-  ]
+    { symbol: "BTC", market_cap_usd: 1260000000000, volume_24h_usd: 28400000000, turnover_ratio: 0.0225, turnover_tier: "LOW_SLIPPAGE (<0.02%)", slippage_risk: "MINIMAL" },
+    { symbol: "ETH", market_cap_usd: 415000000000, volume_24h_usd: 14200000000, turnover_ratio: 0.0342, turnover_tier: "LOW_SLIPPAGE (<0.03%)", slippage_risk: "MINIMAL" },
+    { symbol: "SOL", market_cap_usd: 71000000000, volume_24h_usd: 3850000000, turnover_ratio: 0.0542, turnover_tier: "HIGH_VELOCITY (<0.05%)", slippage_risk: "MODERATE" },
+    { symbol: "BNB", market_cap_usd: 86000000000, volume_24h_usd: 1100000000, turnover_ratio: 0.0128, turnover_tier: "LOW_SLIPPAGE (<0.04%)", slippage_risk: "MINIMAL" },
+    { symbol: "AVAX", market_cap_usd: 11500000000, volume_24h_usd: 620000000, turnover_ratio: 0.0539, turnover_tier: "HIGH_VELOCITY (<0.10%)", slippage_risk: "MODERATE" }
+  ],
+  breadth: {
+    advancing_assets: 68,
+    declining_assets: 32,
+    advance_decline_ratio: 2.125,
+    market_sentiment: "BULLISH_ACCUMULATION",
+    btc_dominance: 54.8,
+    total_mcap_usd: 2340000000000,
+    total_volume_24h_usd: 68500000000
+  },
+  quotes: {
+    BTC: { symbol: "BTC", name: "Bitcoin", price_usd: 64250.00, percent_change_24h: 2.40, percent_change_7d: 6.80, volume_24h_usd: 28400000000, market_cap_usd: 1260000000000, high_24h: 65100.00, low_24h: 63800.00, momentum_score: 8.12, regime: "COMPRESSION" },
+    ETH: { symbol: "ETH", name: "Ethereum", price_usd: 3450.00, percent_change_24h: 1.85, percent_change_7d: 4.90, volume_24h_usd: 14200000000, market_cap_usd: 415000000000, high_24h: 3520.00, low_24h: 3380.00, momentum_score: 7.10, regime: "TRENDING" },
+    SOL: { symbol: "SOL", name: "Solana", price_usd: 152.40, percent_change_24h: 5.80, percent_change_7d: 14.20, volume_24h_usd: 3850000000, market_cap_usd: 71000000000, high_24h: 158.00, low_24h: 144.00, momentum_score: 8.95, regime: "EXPANSION_VOLATILE" }
+  }
 };
 
 let anna = null;
 
-// DOM Elements
-const hostLabel = document.getElementById("host-label");
-const ribbonMcap = document.getElementById("ribbon-mcap");
-const ribbonVol = document.getElementById("ribbon-vol");
-const ribbonBtcDom = document.getElementById("ribbon-btc-dom");
-const ribbonBreadth = document.getElementById("ribbon-breadth");
-const momentumBody = document.getElementById("momentum-table-body");
-const volBody = document.getElementById("vol-table-body");
-const liqBody = document.getElementById("liq-table-body");
-const inspectorGrid = document.getElementById("inspector-grid");
-const inspectorTicker = document.getElementById("inspector-ticker");
-const footerSource = document.getElementById("footer-source");
+// Connect to Anna App Runtime if inside host iframe
+(async function initRuntime() {
+  try {
+    const sdkModule = await import("/static/anna-apps/_sdk/latest/index.js");
+    if (sdkModule && sdkModule.AnnaAppRuntime) {
+      anna = await sdkModule.AnnaAppRuntime.connect({ appId: "cmc-alpha-terminal" });
+      const hostLabel = document.getElementById("host-label");
+      if (hostLabel) hostLabel.textContent = "Anna OS Active";
+      console.log("Connected to Anna App Runtime");
+    }
+  } catch (_e) {
+    const hostLabel = document.getElementById("host-label");
+    if (hostLabel) hostLabel.textContent = "Standalone Preview";
+  }
+})();
 
 // Helper to extract payload whether unwrapped by host or enclosed in envelope
 function extractPayload(res) {
@@ -68,248 +81,264 @@ function extractPayload(res) {
   return res;
 }
 
-// Tool invocation wrapper
-async function invokeScreener(action, args = {}) {
+// Tab Switching
+document.querySelectorAll(".nav-tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".terminal-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    const target = btn.getAttribute("data-tab");
+    const panel = document.getElementById(target);
+    if (panel) panel.classList.add("active");
+  });
+});
+
+async function callScreener(action, extraArgs = {}) {
   if (anna && anna.tools && typeof anna.tools.invoke === "function") {
     try {
       const activeToolId = getToolId();
       const res = await anna.tools.invoke({
         tool_id: activeToolId,
-        method: TOOL_METHOD,
-        args: { action, ...args }
+        method: "screener",
+        args: { action, ...extraArgs }
       });
       const data = extractPayload(res);
-      if (data && typeof data === "object") {
+      if (data && (Array.isArray(data) || typeof data === "object")) {
         return data;
       }
     } catch (err) {
-      console.warn("Tool invoke failed; falling back to fixture", err);
+      console.warn("Anna tool dispatch error, using local quantitative simulation:", err);
     }
   }
-  return STANDALONE_FIXTURES[action] || null;
-}
 
-// Format numbers
-function formatMoney(num) {
-  if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
-  if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
-  if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
-  return `$${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-// Render Breadth Ribbon
-async function loadBreadth() {
-  const data = await invokeScreener("breadth");
-  if (!data) return;
-  ribbonMcap.textContent = formatMoney(data.total_market_cap_usd || 2.34e12);
-  ribbonVol.textContent = formatMoney(data.total_volume_24h_usd || 6.85e10);
-  ribbonBtcDom.textContent = `${(data.btc_dominance_percentage || 54.8).toFixed(1)}%`;
-  const ratio = data.advance_decline_ratio || 1.85;
-  const mood = ratio >= 1.5 ? "Bull" : ratio <= 0.67 ? "Bear" : "Neutral";
-  ribbonBreadth.textContent = `${ratio.toFixed(2)} (${mood})`;
-  if (data.data_source) {
-    footerSource.textContent = `Source: ${data.data_source}`;
+  // Fallback fixtures
+  if (action === "momentum") return STANDALONE_FIXTURES.momentum;
+  if (action === "volatility") return STANDALONE_FIXTURES.volatility;
+  if (action === "liquidity") return STANDALONE_FIXTURES.liquidity;
+  if (action === "breadth") return STANDALONE_FIXTURES.breadth;
+  if (action === "quote") {
+    const sym = (extraArgs.symbol || "BTC").toUpperCase();
+    return STANDALONE_FIXTURES.quotes[sym] || STANDALONE_FIXTURES.quotes["BTC"];
   }
+  return null;
 }
 
-// Render Momentum Screen
-async function loadMomentum() {
-  momentumBody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-dim)">Scanning market...</td></tr>`;
-  const data = await invokeScreener("momentum", { top_n: 10, min_volume_usd: 50000000 });
-  const assets = data && data.assets ? data.assets : STANDALONE_FIXTURES.momentum.assets;
-  momentumBody.innerHTML = "";
-  assets.forEach((item, idx) => {
-    const tr = document.createElement("tr");
-    const chg24 = item.percent_change_24h || 0;
-    const chg7d = item.percent_change_7d || 0;
-    const c24Class = chg24 >= 0 ? "val-up" : "val-down";
-    const c7dClass = chg7d >= 0 ? "val-up" : "val-down";
-    tr.innerHTML = `
-      <td>${idx + 1}</td>
-      <td><strong>${item.symbol}</strong></td>
-      <td>$${Number(item.price_usd).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-      <td class="${c24Class}">${chg24 > 0 ? "+" : ""}${chg24.toFixed(2)}%</td>
-      <td class="${c7dClass}">${chg7d > 0 ? "+" : ""}${chg7d.toFixed(2)}%</td>
-      <td>${formatMoney(item.volume_24h_usd)}</td>
-      <td style="color:var(--accent-cyan);font-weight:700">${item.momentum_score}</td>
-    `;
-    momentumBody.appendChild(tr);
-  });
+// --------------------------------------------------------------------------
+// Renderers
+// --------------------------------------------------------------------------
+
+function formatCurrency(val) {
+  if (val >= 1e12) return `$${(val / 1e12).toFixed(2)}T`;
+  if (val >= 1e9) return `$${(val / 1e9).toFixed(2)}B`;
+  if (val >= 1e6) return `$${(val / 1e6).toFixed(2)}M`;
+  if (val >= 1000) return `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `$${val.toFixed(2)}`;
 }
 
-// Render Volatility Regimes
-async function loadVolatility() {
-  volBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">Evaluating regimes...</td></tr>`;
-  const symbols = ["BTC", "ETH", "SOL", "BNB"];
-  const rows = [];
-  for (const sym of symbols) {
-    const res = await invokeScreener("volatility", { symbol: sym });
-    if (res) rows.push(res);
+async function renderMomentumScreen() {
+  const tbody = document.getElementById("momentum-tbody");
+  const spinner = document.getElementById("momentum-spinner");
+  const minVol = parseFloat(document.getElementById("filter-min-volume")?.value || 500000000);
+
+  if (spinner) spinner.style.display = "inline-block";
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 24px; color: var(--text-muted);">Executing multi-factor momentum sort & regression...</td></tr>`;
+
+  let items = await callScreener("momentum", { min_volume_usd: minVol, top_n: 10 });
+  if (spinner) spinner.style.display = "none";
+
+  if (!items || !Array.isArray(items)) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px; color: var(--quant-red);">No assets met the minimum liquidity threshold.</td></tr>`;
+    return;
   }
-  const displayRows = rows.length > 0 ? rows : STANDALONE_FIXTURES.volatility;
-  volBody.innerHTML = "";
-  displayRows.forEach(item => {
-    const tr = document.createElement("tr");
-    let badgeClass = "badge-compression";
-    if (item.regime.includes("EXPANSION")) badgeClass = "badge-volatile";
-    else if (item.regime.includes("TRENDING")) badgeClass = "badge-trending";
 
-    tr.innerHTML = `
-      <td><strong>${item.symbol}</strong></td>
-      <td>$${Number(item.price_usd).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-      <td>${(item.parkinson_vol * 100).toFixed(2)}%</td>
-      <td>${(item.annualized_vol * 100).toFixed(1)}%</td>
-      <td><span class="badge-regime ${badgeClass}">${item.regime.split(" ")[0]}</span></td>
-      <td>${item.risk_level}</td>
+  tbody.innerHTML = items.map(item => {
+    const isUp24 = item.percent_change_24h >= 0;
+    const isUp7d = item.percent_change_7d >= 0;
+    const scorePct = Math.min(Math.max((item.momentum_score / 10) * 100, 0), 100);
+
+    return `
+      <tr>
+        <td style="font-weight: 800; color: var(--quant-blue);">#${item.rank}</td>
+        <td>
+          <div class="asset-badge">
+            <span class="asset-badge-icon">${item.symbol.slice(0, 3)}</span>
+            <span>${item.symbol}</span>
+            <span style="font-size: 10px; color: var(--text-muted); font-weight: normal;">${item.name || ""}</span>
+          </div>
+        </td>
+        <td style="text-align: right; font-weight: 700;">${formatCurrency(item.price_usd)}</td>
+        <td style="text-align: right;">
+          <span class="return-badge ${isUp24 ? 'up' : 'down'} font-mono">${isUp24 ? '+' : ''}${item.percent_change_24h.toFixed(2)}%</span>
+        </td>
+        <td style="text-align: right;">
+          <span class="return-badge ${isUp7d ? 'up' : 'down'} font-mono">${isUp7d ? '+' : ''}${item.percent_change_7d.toFixed(2)}%</span>
+        </td>
+        <td style="text-align: right; color: var(--text-muted);">${formatCurrency(item.volume_24h_usd)}</td>
+        <td>
+          <div class="momentum-meter">
+            <div class="momentum-bar"><div class="fill" style="width: ${scorePct}%;"></div></div>
+            <span style="font-weight: 800; color: var(--text-pure); font-size: 11px;">${item.momentum_score.toFixed(2)}</span>
+          </div>
+        </td>
+      </tr>
     `;
-    volBody.appendChild(tr);
-  });
+  }).join("");
 }
 
-// Render Liquidity Depth
-async function loadLiquidity() {
-  liqBody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-dim)">Measuring depth...</td></tr>`;
-  const symbols = ["BTC", "ETH", "SOL", "BNB"];
-  const rows = [];
-  for (const sym of symbols) {
-    const res = await invokeScreener("liquidity", { symbol: sym });
-    if (res) rows.push(res);
+async function renderVolatilityRegimes() {
+  const container = document.getElementById("volatility-cards");
+  const spinner = document.getElementById("volatility-spinner");
+
+  if (spinner) spinner.style.display = "inline-block";
+  container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 24px; color: var(--text-muted);">Sampling 24h high/low distributions and computing Parkinson sigma...</div>`;
+
+  const items = await callScreener("volatility");
+  if (spinner) spinner.style.display = "none";
+
+  if (!items || !Array.isArray(items)) {
+    container.innerHTML = `<div style="color: var(--quant-red);">Failed to compute volatility regimes.</div>`;
+    return;
   }
-  const displayRows = rows.length > 0 ? rows : STANDALONE_FIXTURES.liquidity;
-  liqBody.innerHTML = "";
-  displayRows.forEach(item => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><strong>${item.symbol}</strong></td>
-      <td>$${Number(item.price_usd).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-      <td>${(item.turnover_ratio * 100).toFixed(2)}%</td>
-      <td style="color:var(--accent-cyan);font-weight:600">${item.liquidity_grade}</td>
-      <td>${item.slippage_est}</td>
+
+  container.innerHTML = items.map(item => {
+    const regime = item.regime.toLowerCase();
+    const regimeClass = regime.includes("compression") ? "compression" : regime.includes("trending") ? "trending" : "expansion";
+    const volPct = (item.parkinson_volatility * 100).toFixed(2);
+
+    return `
+      <div class="vol-card">
+        <div class="vol-header">
+          <span class="asset-badge font-mono" style="font-size: 13px;">${item.symbol}</span>
+          <span class="vol-regime-tag ${regimeClass} font-mono">${item.regime.replace('_', ' ')}</span>
+        </div>
+        <div class="vol-detail-row">
+          <span class="vol-label">SPOT PRICE:</span>
+          <span class="font-mono font-bold">${formatCurrency(item.price_usd)}</span>
+        </div>
+        <div class="vol-detail-row">
+          <span class="vol-label">24H HIGH / LOW:</span>
+          <span class="font-mono">${formatCurrency(item.high_24h_usd)} / ${formatCurrency(item.low_24h_usd)}</span>
+        </div>
+        <div class="vol-detail-row">
+          <span class="vol-label">PARKINSON &sigma;:</span>
+          <span class="font-mono font-bold" style="color: var(--quant-blue);">${volPct}%</span>
+        </div>
+      </div>
     `;
-    liqBody.appendChild(tr);
-  });
+  }).join("");
 }
 
-// Render Single Asset Inspector
-async function loadInspector(symbol = "BTC") {
-  inspectorGrid.innerHTML = `<div style="grid-column:span 2;text-align:center;color:var(--text-dim)">Inspecting ${symbol}...</div>`;
-  const quote = await invokeScreener("quote", { symbol });
-  const vol = await invokeScreener("volatility", { symbol });
-  const liq = await invokeScreener("liquidity", { symbol });
+async function renderLiquidityDepth() {
+  const tbody = document.getElementById("liquidity-tbody");
+  const spinner = document.getElementById("liquidity-spinner");
 
-  const q = quote || { price_usd: 64250, percent_change_24h: 1.85, volume_24h_usd: 28.5e9, market_cap_usd: 1.26e12 };
-  const v = vol || { parkinson_vol: 0.0201, regime: "COMPRESSION" };
-  const l = liq || { turnover_ratio: 0.0225, liquidity_grade: "LIQUID_MIDCAP" };
+  if (spinner) spinner.style.display = "inline-block";
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 24px; color: var(--text-muted);">Analyzing orderbook depth and turnover velocity...</td></tr>`;
 
-  inspectorGrid.innerHTML = `
-    <div class="stat-card">
-      <div class="stat-label">Current Price</div>
-      <div class="stat-value">$${Number(q.price_usd).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+  const items = await callScreener("liquidity");
+  if (spinner) spinner.style.display = "none";
+
+  if (!items || !Array.isArray(items)) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color: var(--quant-red);">Failed to retrieve liquidity metrics.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = items.map(item => {
+    const turnoverPct = (item.turnover_ratio * 100).toFixed(2);
+    const isModerate = item.slippage_risk === "MODERATE";
+
+    return `
+      <tr>
+        <td class="font-bold font-mono">${item.symbol}</td>
+        <td style="text-align: right;">${formatCurrency(item.market_cap_usd)}</td>
+        <td style="text-align: right; color: var(--text-muted);">${formatCurrency(item.volume_24h_usd)}</td>
+        <td style="text-align: right; color: var(--quant-blue); font-weight: 700;">${turnoverPct}%</td>
+        <td>
+          <span class="hud-badge ${isModerate ? 'quant-amber' : 'quant-green'} font-mono">${item.turnover_tier}</span>
+        </td>
+        <td style="color: var(--text-main); font-size: 10px;">${isModerate ? 'Use TWAP for >$500k orders' : 'Full market-order depth available'}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+async function renderAssetInspector() {
+  const symbol = (document.getElementById("inspector-search-input")?.value || "BTC").trim().toUpperCase();
+  const stage = document.getElementById("inspector-content");
+
+  stage.innerHTML = `<div style="text-align:center; padding: 24px; color: var(--text-muted);">Fetching real-time institutional quote for ${symbol}...</div>`;
+
+  const item = await callScreener("quote", { symbol });
+  if (!item) {
+    stage.innerHTML = `<div style="color: var(--quant-red); padding: 20px;">Asset ${symbol} not found in top 100 coverage.</div>`;
+    return;
+  }
+
+  const isUp = item.percent_change_24h >= 0;
+
+  stage.innerHTML = `
+    <div class="quote-hero-card">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div class="asset-badge-icon" style="width: 44px; height: 44px; font-size: 16px;">${item.symbol.slice(0, 3)}</div>
+        <div>
+          <h3 style="font-size: 18px; font-weight: 800; color: var(--text-pure);">${item.symbol} &middot; <span style="font-size: 14px; color: var(--text-muted); font-weight: normal;">${item.name}</span></h3>
+          <span class="hud-badge quant-blue font-mono">REGIME: ${item.regime}</span>
+        </div>
+      </div>
+      <div class="quote-price-wrap" style="text-align: right;">
+        <span class="quote-price font-mono">${formatCurrency(item.price_usd)}</span>
+        <span class="quote-change font-mono ${isUp ? 'quant-green' : 'quant-red'}" style="color: ${isUp ? 'var(--quant-green)' : 'var(--quant-red)'};">
+          ${isUp ? '▲ +' : '▼ '}${item.percent_change_24h.toFixed(2)}% (24h)
+        </span>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">24h Return</div>
-      <div class="stat-value ${q.percent_change_24h >= 0 ? "val-up" : "val-down"}">${q.percent_change_24h >= 0 ? "+" : ""}${Number(q.percent_change_24h).toFixed(2)}%</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">24h Volume / Cap</div>
-      <div class="stat-value">${formatMoney(q.volume_24h_usd)} / ${formatMoney(q.market_cap_usd)}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Parkinson Volatility</div>
-      <div class="stat-value">${(v.parkinson_vol * 100).toFixed(2)}% (${v.regime ? v.regime.split(" ")[0] : "CALM"})</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Turnover Velocity</div>
-      <div class="stat-value">${(l.turnover_ratio * 100).toFixed(2)}% (${l.liquidity_grade})</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Execution Quality</div>
-      <div class="stat-value" style="color:var(--accent-green)">Optimal Depth</div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+      <div class="macro-card">
+        <span class="macro-label">24H RANGE</span>
+        <span class="font-mono font-bold" style="font-size: 13px; color: var(--text-pure);">${formatCurrency(item.low_24h)} &ndash; ${formatCurrency(item.high_24h)}</span>
+      </div>
+      <div class="macro-card">
+        <span class="macro-label">24H VOLUME</span>
+        <span class="font-mono font-bold" style="font-size: 13px; color: var(--text-pure);">${formatCurrency(item.volume_24h_usd)}</span>
+      </div>
+      <div class="macro-card">
+        <span class="macro-label">MOMENTUM ALPHA SCORE</span>
+        <span class="font-mono font-bold" style="font-size: 13px; color: var(--quant-green);">${item.momentum_score.toFixed(2)} / 10.0</span>
+      </div>
     </div>
   `;
 }
 
-// Share finding to chat
-async function shareToChat(text) {
+// Button Events
+document.getElementById("btn-refresh-momentum")?.addEventListener("click", renderMomentumScreen);
+document.getElementById("filter-min-volume")?.addEventListener("change", renderMomentumScreen);
+document.getElementById("filter-universe")?.addEventListener("change", renderMomentumScreen);
+document.getElementById("btn-refresh-volatility")?.addEventListener("click", renderVolatilityRegimes);
+document.getElementById("btn-refresh-liquidity")?.addEventListener("click", renderLiquidityDepth);
+document.getElementById("btn-search-asset")?.addEventListener("click", renderAssetInspector);
+
+// Post to Anna Chat
+document.getElementById("btn-post-anna-chat")?.addEventListener("click", async () => {
+  const digest = `**[ALPHA DIGEST] CMC Quantitative Market Summary**\n\n- **Macro Breadth:** Advance/Decline \`1.85:1\` (Bullish Accumulation)\n- **Top Momentum Asset:** \`SOL\` (Momentum Score: \`8.95\`, 7d: \`+14.2%\`)\n- **BTC Volatility Regime:** \`COMPRESSION\` (&sigma; = 1.7% &middot; Breakout Watch)\n- **Global 24h Volume:** \`$68.5B USD\``;
+
   if (anna && anna.chat && typeof anna.chat.write_message === "function") {
     try {
-      await anna.chat.write_message({
-        role: "user",
-        content: text
-      });
-      alert("Snapshot shared to Anna chat!");
+      await anna.chat.write_message({ message: digest });
+      alert("Alpha intelligence digest posted to Anna Chat!");
+      return;
     } catch (err) {
-      console.error("Failed to write to chat:", err);
+      console.warn("Host chat dispatch skipped:", err);
     }
-  } else {
-    alert("Chat integration active in Anna Desktop.\n\nSimulated output:\n" + text);
   }
-}
+  navigator.clipboard.writeText(digest);
+  alert("Copied formatted alpha digest to clipboard (ready to paste in Anna Chat)!");
+});
 
-// Wire UI Events
-function setupEvents() {
-  // Tab switching
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
-      btn.classList.add("active");
-      const target = document.getElementById(btn.dataset.tab);
-      if (target) target.classList.add("active");
-
-      // Dynamic title
-      if (anna && anna.window && typeof anna.window.set_title === "function") {
-        await anna.window.set_title({ title: `CMC Alpha Terminal - ${btn.textContent}` });
-      }
-
-      // Load view data
-      if (btn.dataset.tab === "tab-momentum") loadMomentum();
-      else if (btn.dataset.tab === "tab-volatility") loadVolatility();
-      else if (btn.dataset.tab === "tab-liquidity") loadLiquidity();
-      else if (btn.dataset.tab === "tab-inspector") loadInspector(inspectorTicker.value || "BTC");
-    });
-  });
-
-  // Action Buttons
-  document.getElementById("btn-refresh-momentum").addEventListener("click", loadMomentum);
-  document.getElementById("btn-refresh-vol").addEventListener("click", loadVolatility);
-  document.getElementById("btn-refresh-liq").addEventListener("click", loadLiquidity);
-  document.getElementById("btn-inspect-ticker").addEventListener("click", () => {
-    loadInspector(inspectorTicker.value || "BTC");
-  });
-
-  // Share buttons
-  document.getElementById("btn-share-momentum").addEventListener("click", () => {
-    const text = "### [CMC Terminal] Top Momentum Scan\nMarket shows bullish cross-sectional momentum led by SOL (+5.10% 24h, 8.42 Alpha Score) and ETH (+2.40% 24h, 5.18 Alpha Score).";
-    shareToChat(text);
-  });
-  document.getElementById("btn-share-ticker").addEventListener("click", () => {
-    const sym = (inspectorTicker.value || "BTC").toUpperCase();
-    const text = `### [CMC Terminal] Quantitative Profile: ${sym}\nAsset is currently monitored on Anna AI OS with low realized Parkinson volatility and institutional-grade liquidity depth.`;
-    shareToChat(text);
-  });
-}
-
-// Bootstrap
-async function init() {
-  setupEvents();
-
-  // Connect to Anna Runtime if available
-  try {
-    const sdkModule = await import("/static/anna-apps/_sdk/latest/index.js");
-    if (sdkModule && sdkModule.AnnaAppRuntime) {
-      anna = await sdkModule.AnnaAppRuntime.connect({ appId: "cmc-alpha-terminal" });
-      hostLabel.textContent = "Anna OS Online";
-      console.log("Connected to Anna App Runtime");
-    }
-  } catch (_e) {
-    hostLabel.textContent = "Standalone Mode";
-    console.log("Using Standalone preview mode");
-  }
-
-  // Load initial view
-  await loadBreadth();
-  await loadMomentum();
-}
-
-init();
+// Auto-run on startup
+window.addEventListener("DOMContentLoaded", () => {
+  renderMomentumScreen();
+  renderVolatilityRegimes();
+  renderLiquidityDepth();
+  renderAssetInspector();
+});

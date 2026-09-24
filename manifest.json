@@ -36,16 +36,16 @@
         "default": true,
         "entry": "index.html",
         "min_size": {
-          "w": 440,
-          "h": 580
+          "w": 820,
+          "h": 560
         },
         "default_size": {
-          "w": 560,
-          "h": 720
+          "w": 1020,
+          "h": 740
         },
         "max_size": {
-          "w": 960,
-          "h": 1080
+          "w": 1400,
+          "h": 1050
         },
         "resizable": true,
         "movable": true,

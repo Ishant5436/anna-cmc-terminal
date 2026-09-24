@@ -4,12 +4,14 @@
  * and renders interactive institutional quantitative crypto analytics.
  */
 
+const EXECUTA_HANDLE = "cmc-screener";
 const DEV_FALLBACK_TOOL_ID = "tool-dev-cmc-screener-12345678";
-const TOOL_ID =
-  (typeof window !== "undefined"
+function getToolId() {
+  return (typeof window !== "undefined"
     && window.__ANNA_TOOL_IDS__
-    && window.__ANNA_TOOL_IDS__["cmc-screener"])
+    && window.__ANNA_TOOL_IDS__[EXECUTA_HANDLE])
   || DEV_FALLBACK_TOOL_ID;
+}
 const TOOL_METHOD = "screener";
 
 // High-fidelity fallback fixtures for standalone browser preview
@@ -58,17 +60,27 @@ const inspectorGrid = document.getElementById("inspector-grid");
 const inspectorTicker = document.getElementById("inspector-ticker");
 const footerSource = document.getElementById("footer-source");
 
+// Helper to extract payload whether unwrapped by host or enclosed in envelope
+function extractPayload(res) {
+  if (!res) return null;
+  if (typeof res !== "object") return res;
+  if ("data" in res && res.data !== undefined) return res.data;
+  return res;
+}
+
 // Tool invocation wrapper
 async function invokeScreener(action, args = {}) {
   if (anna && anna.tools && typeof anna.tools.invoke === "function") {
     try {
+      const activeToolId = getToolId();
       const res = await anna.tools.invoke({
-        tool_id: TOOL_ID,
+        tool_id: activeToolId,
         method: TOOL_METHOD,
         args: { action, ...args }
       });
-      if (res && res.success && res.data) {
-        return res.data;
+      const data = extractPayload(res);
+      if (data && typeof data === "object") {
+        return data;
       }
     } catch (err) {
       console.warn("Tool invoke failed; falling back to fixture", err);

@@ -5,10 +5,11 @@
   "tagline": "Institutional Quantitative Crypto Intelligence & Alpha Screener for Anna AI OS",
   "description": "CMC Alpha Terminal brings hedge-fund grade quantitative analytics and crypto screening directly into the Anna AI OS desktop.\n\n### Core Capabilities\n- **Multi-Factor Cross-Sectional Momentum:** Rank top crypto assets by short-term (24h) and medium-term (7d) returns, volume weighting, and market capitalization scaling.\n- **Parkinson Realized Volatility Regimes:** Real-time extreme-value Parkinson volatility estimation to classify market regimes into COMPRESSION (breakout watch), TRENDING (momentum), or EXPANSION_VOLATILE (risk alert).\n- **Turnover & Liquidity Depth Analysis:** Measure 24h volume-to-market-cap velocity to classify execution slippage and liquidity risk tiers.\n- **Market Breadth & Dominance Tracking:** Track real-time market advance/decline ratios, Bitcoin dominance, and global DeFi liquidity.\n\n### Direct Host & Chat Integration\nInteract via natural language in Anna chat or through the dedicated glassmorphic desktop terminal window.",
   "category": "data",
-  "logo_url": "https://raw.githubusercontent.com/Ishant5436/cmc-alpha-terminal/main/assets/banner_mockup.png",
-  "cover_url": "https://raw.githubusercontent.com/Ishant5436/cmc-alpha-terminal/main/assets/banner_mockup.png",
+  "logo_url": "https://raw.githubusercontent.com/Ishant5436/anna-cmc-terminal/main/assets/logo.png",
+  "cover_url": "https://raw.githubusercontent.com/Ishant5436/anna-cmc-terminal/main/assets/screenshot_1.png",
   "screenshots": [
-    "https://raw.githubusercontent.com/Ishant5436/cmc-alpha-terminal/main/assets/terminal_ui_preview.png"
+    "https://raw.githubusercontent.com/Ishant5436/anna-cmc-terminal/main/assets/screenshot_1.png",
+    "https://raw.githubusercontent.com/Ishant5436/anna-cmc-terminal/main/assets/screenshot_2.png"
   ],
   "homepage_url": "https://github.com/Ishant5436/anna-cmc-terminal",
   "support_url": "https://github.com/Ishant5436/anna-cmc-terminal/issues",

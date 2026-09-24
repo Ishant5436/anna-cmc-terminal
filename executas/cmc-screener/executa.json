@@ -8,11 +8,37 @@
   "type": "python",
   "enabled": true,
   "distribution": {
-    "active": "local",
+    "active": "binary",
     "profiles": {
       "local": {
         "type": "local",
         "supports_protocol": true
+      },
+      "binary": {
+        "type": "binary",
+        "supports_protocol": true,
+        "binary_artifacts": {
+          "darwin-arm64": {
+            "path": "dist/cmc-screener-{version}-darwin-arm64.tar.gz",
+            "entrypoint": "cmc-screener",
+            "format": "tar.gz"
+          },
+          "darwin-x86_64": {
+            "path": "dist/cmc-screener-{version}-darwin-x86_64.tar.gz",
+            "entrypoint": "cmc-screener",
+            "format": "tar.gz"
+          },
+          "linux-x86_64": {
+            "path": "dist/cmc-screener-{version}-linux-x86_64.tar.gz",
+            "entrypoint": "cmc-screener",
+            "format": "tar.gz"
+          },
+          "windows-x86_64": {
+            "path": "dist/cmc-screener-{version}-windows-x86_64.zip",
+            "entrypoint": "cmc-screener.exe",
+            "format": "zip"
+          }
+        }
       }
     }
   }

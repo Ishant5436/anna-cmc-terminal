@@ -46,7 +46,7 @@
         <button class="nav-tab" data-tab="tab-inspector">
           <kbd class="kbd-badge">4</kbd>
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span>Inspector</span>
+          <span>Diagnostic</span>
         </button>
         <button class="nav-tab" data-tab="tab-correlation">
           <kbd class="kbd-badge">5</kbd>
@@ -56,12 +56,12 @@
         <button class="nav-tab" data-tab="tab-risk-parity">
           <kbd class="kbd-badge">6</kbd>
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          <span>Risk &amp; Carry</span>
+          <span>Risk Parity &amp; Carry</span>
         </button>
         <button class="nav-tab" data-tab="tab-pairs">
           <kbd class="kbd-badge">7</kbd>
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
-          <span>Stat-Arb</span>
+          <span>Statistical Arbitrage</span>
         </button>
       </nav>
 
@@ -123,7 +123,7 @@
       </div>
       <span class="ribbon-sep">&middot;</span>
       <div class="ribbon-stat-item">
-        <span class="ribbon-stat-label">24h Vol:</span>
+        <span class="ribbon-stat-label">24H Vol:</span>
         <span class="ribbon-stat-val font-mono" id="ribbon-vol">$68.5B <span class="delta-tag glyph-up">▲ 3.4%</span></span>
       </div>
       <span class="ribbon-sep">&middot;</span>
@@ -246,16 +246,16 @@
                         <div class="th-content th-right"><span>Price (USD)</span><span class="sort-indicator">↕</span></div>
                       </th>
                       <th class="th-sortable th-num" data-sort="percent_change_24h" style="width: 90px;" aria-sort="none">
-                        <div class="th-content th-right"><span>24h %</span><span class="sort-indicator">↕</span></div>
+                        <div class="th-content th-right"><span>24H %</span><span class="sort-indicator">↕</span></div>
                       </th>
                       <th class="th-sortable th-num" data-sort="percent_change_7d" style="width: 90px;" aria-sort="none">
-                        <div class="th-content th-right"><span>7d %</span><span class="sort-indicator">↕</span></div>
+                        <div class="th-content th-right"><span>7D %</span><span class="sort-indicator">↕</span></div>
                       </th>
                       <th class="th-sortable th-num" data-sort="volume_24h_usd" style="width: 125px;" aria-sort="none">
-                        <div class="th-content th-right"><span>24h Vol (USD)</span><span class="sort-indicator">↕</span></div>
+                        <div class="th-content th-right"><span>24H Vol (USD)</span><span class="sort-indicator">↕</span></div>
                       </th>
                       <th style="width: 80px; text-align: center;">
-                        <span>7d Trend</span>
+                        <span>7D Trend</span>
                       </th>
                       <th class="th-sortable" data-sort="momentum_score" style="width: 155px;" aria-sort="descending">
                         <div class="th-content">
@@ -324,7 +324,7 @@
                 <div class="factor-breakdown-list font-mono">
                   <div class="factor-row">
                     <div class="factor-label-col">
-                      <span class="factor-name">24h Return Z-Score</span>
+                      <span class="factor-name">24H Return Z-Score</span>
                       <span class="factor-weight-pill">30% w</span>
                     </div>
                     <div class="factor-bar-col">
@@ -338,7 +338,7 @@
 
                   <div class="factor-row">
                     <div class="factor-label-col">
-                      <span class="factor-name">7d Return Z-Score</span>
+                      <span class="factor-name">7D Return Z-Score</span>
                       <span class="factor-weight-pill">50% w</span>
                     </div>
                     <div class="factor-bar-col">
@@ -452,7 +452,7 @@
                 <tr>
                   <th style="width: 160px;">Asset</th>
                   <th class="th-num" style="width: 110px;">Spot Price</th>
-                  <th style="width: 250px;">24h Price Channel (Low – High)</th>
+                  <th style="width: 250px;">24H Price Channel (Low – High)</th>
                   <th class="th-num" style="width: 140px;">Parkinson &sigma;</th>
                   <th style="width: 150px;">Regime</th>
                   <th>Execution Advisory</th>
@@ -472,7 +472,7 @@
           <div class="panel-headline-row">
             <div>
               <h2 class="panel-heading">Turnover Velocity & Slippage Depth</h2>
-              <p class="panel-subheading">24h volume-to-market-cap ratio measuring liquidity velocity and execution slippage risk.</p>
+              <p class="panel-subheading">24H volume-to-market-cap ratio measuring liquidity velocity and execution slippage risk.</p>
             </div>
             <button class="action-btn-primary" id="btn-refresh-liquidity">
               <span class="btn-spinner hidden" id="liquidity-spinner"></span>
@@ -488,7 +488,7 @@
                 <tr>
                   <th>Asset</th>
                   <th style="text-align: right;">Market Cap</th>
-                  <th style="text-align: right;">24h Volume</th>
+                  <th style="text-align: right;">24H Volume</th>
                   <th style="text-align: right;">Turnover</th>
                   <th>Risk Tier</th>
                   <th>Advisory</th>
@@ -771,7 +771,7 @@
       <div class="weight-sliders-stack font-mono">
         <div class="slider-group">
           <div class="slider-header">
-            <span class="slider-label">24h Return Weight:</span>
+            <span class="slider-label">24H Return Weight:</span>
             <span class="slider-value" id="val-weight-24h">30%</span>
           </div>
           <input type="range" min="0" max="100" value="30" class="hud-range" id="range-weight-24h" />
@@ -779,7 +779,7 @@
 
         <div class="slider-group">
           <div class="slider-header">
-            <span class="slider-label">7d Return Weight:</span>
+            <span class="slider-label">7D Return Weight:</span>
             <span class="slider-value" id="val-weight-7d">50%</span>
           </div>
           <input type="range" min="0" max="100" value="50" class="hud-range" id="range-weight-7d" />
@@ -825,7 +825,7 @@
         </p>
 
         <div class="formula-box font-mono">
-          $$\text{Alpha Score} = \text{Scale}_{0-10}\left( w_{24} \cdot Z_{24h} + w_{7d} \cdot Z_{7d} + w_{\text{vol}} \cdot Z_{\ln(\text{vol})} \right)$$
+          $$\text{Alpha Score} = \text{Scale}_{0-10}\left( w_{24} \cdot Z_{24H} + w_{7D} \cdot Z_{7D} + w_{\text{vol}} \cdot Z_{\ln(\text{vol})} \right)$$
         </div>
 
         <div class="scale-table font-mono">

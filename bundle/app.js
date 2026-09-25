@@ -777,7 +777,7 @@ function initExportUtilities() {
 
   document.getElementById("btn-copy-markdown")?.addEventListener("click", () => {
     if (filteredAssets.length === 0) return alert("No data to copy.");
-    let md = "| Rank | Asset | Price (USD) | 24h % | 7d % | Volume (USD) | Alpha Score |\n";
+    let md = "| Rank | Asset | Price (USD) | 24H % | 7D % | Volume (USD) | Alpha Score |\n";
     md += "|---|---|---|---|---|---|---|\n";
     filteredAssets.forEach(a => {
       md += `| #${a.rank} | **${a.symbol}** (${a.name}) | ${formatCurrency(a.price_usd)} | ${a.percent_change_24h >= 0 ? '+' : ''}${a.percent_change_24h}% | ${a.percent_change_7d >= 0 ? '+' : ''}${a.percent_change_7d}% | ${formatCurrency(a.volume_24h_usd)} | **${a.momentum_score}/10** |\n`;
@@ -937,7 +937,7 @@ function renderVolatilityRowHtml(item) {
       <td>
         <div class="range-channel-wrap font-mono">
           <span class="range-extreme-val left">${formatCurrency(low)}</span>
-          <div class="range-channel-track" title="Spot: ${formatCurrency(price)} (${channelPct.toFixed(0)}% of 24h channel)">
+          <div class="range-channel-track" title="Spot: ${formatCurrency(price)} (${channelPct.toFixed(0)}% of 24H channel)">
             <div class="range-channel-fill" style="width: ${channelPct}%;"></div>
             <div class="range-channel-thumb ${regimeClass}" style="left: ${channelPct}%;"></div>
           </div>
@@ -1734,10 +1734,10 @@ function parseAndExecuteCommand(rawInput) {
   if (input === "1" || input === "MOM" || input === "MOMENTUM" || input === "TAB 1" || input === "T1") { switchTabByIndex(0); return true; }
   if (input === "2" || input === "VOL" || input === "VOLATILITY" || input === "TAB 2" || input === "T2") { switchTabByIndex(1); return true; }
   if (input === "3" || input === "LIQ" || input === "LIQUIDITY" || input === "TAB 3" || input === "T3") { switchTabByIndex(2); return true; }
-  if (input === "4" || input === "INSP" || input === "INSPECTOR" || input === "TAB 4" || input === "T4") { switchTabByIndex(3); return true; }
+  if (input === "4" || input === "DIAG" || input === "DIAGNOSTIC" || input === "INSP" || input === "INSPECTOR" || input === "TAB 4" || input === "T4") { switchTabByIndex(3); return true; }
   if (input === "5" || input === "CORR" || input === "CORRELATION" || input === "HEATMAP" || input === "MATRIX" || input === "TAB 5" || input === "T5") { switchTabByIndex(4); return true; }
   if (input === "6" || input === "CARRY" || input === "FUNDING" || input === "PARITY" || input === "RISK" || input === "TAB 6" || input === "T6") { switchTabByIndex(5); return true; }
-  if (input === "7" || input === "PAIRS" || input === "STATARB" || input === "COINT" || input === "SPREAD" || input === "TAB 7" || input === "T7") { switchTabByIndex(6); return true; }
+  if (input === "7" || input === "STATARB" || input === "STAT-ARB" || input === "PAIRS" || input === "COINT" || input === "SPREAD" || input === "TAB 7" || input === "T7") { switchTabByIndex(6); return true; }
   if (input === "OBI" || input === "DEPTH" || input === "ORDERBOOK") { switchTabByIndex(3); return true; }
   if (input === "DISPATCH PAIRS" || input === "DISPATCH PAIR") { dispatchAnnaStatArb(); return true; }
   if (input === "DISPATCH" || input === "BRIEF" || input === "EMIT") { dispatchAnnaQuantBrief(); return true; }
@@ -1837,11 +1837,13 @@ function getCommandPaletteCatalog() {
     { cmd: "1", desc: "Switch to Momentum Screener Tab", badge: "Tab" },
     { cmd: "2", desc: "Switch to Volatility Regime Matrix", badge: "Tab" },
     { cmd: "3", desc: "Switch to Liquidity Risk Screener", badge: "Tab" },
-    { cmd: "4", desc: "Switch to Quantitative Asset Inspector", badge: "Tab" },
+    { cmd: "4", desc: "Switch to Quantitative Asset Diagnostic", badge: "Tab" },
     { cmd: "5", desc: "Switch to Cross-Sectional Correlation & Beta Matrix", badge: "Tab" },
     { cmd: "6", desc: "Switch to Risk Parity & Perpetual Carry", badge: "Tab" },
     { cmd: "7", desc: "Switch to Statistical Arbitrage & Cointegration Pairs", badge: "Tab" },
     { cmd: "PAIRS", desc: "View Cointegration Pairs & Spread Deviation", badge: "Tab" },
+    { cmd: "STATARB", desc: "View Statistical Arbitrage & Cointegration Pairs", badge: "Tab" },
+    { cmd: "DIAG", desc: "Switch to Quantitative Asset Diagnostic", badge: "Tab" },
     { cmd: "OBI", desc: "View Microstructure Order Book Imbalance", badge: "Inspect" },
     { cmd: "DISPATCH PAIRS", desc: "Dispatch Pair Strategy to Anna chat", badge: "Action" },
     { cmd: "DISPATCH", desc: "Dispatch executive quantitative brief to Anna chat", badge: "Action" },

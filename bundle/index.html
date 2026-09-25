@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>CMC Alpha Terminal</title>
   <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="density-comfortable">
@@ -283,8 +286,9 @@
                       <span class="factor-weight-pill">30% w</span>
                     </div>
                     <div class="factor-bar-col">
-                      <div class="factor-bar-track">
-                        <div class="factor-bar-fill up" id="factor-bar-24h" style="width: 78%;"></div>
+                      <div class="bidirectional-track" title="Z-Score relative to universe mean (0)">
+                        <div class="bidirectional-zero-line"></div>
+                        <div class="bidirectional-fill up" id="factor-bar-24h" style="left: 50%; width: 38%;"></div>
                       </div>
                       <span class="factor-val" id="factor-val-24h">+1.82 &sigma;</span>
                     </div>
@@ -296,8 +300,9 @@
                       <span class="factor-weight-pill">50% w</span>
                     </div>
                     <div class="factor-bar-col">
-                      <div class="factor-bar-track">
-                        <div class="factor-bar-fill up" id="factor-bar-7d" style="width: 92%;"></div>
+                      <div class="bidirectional-track" title="Z-Score relative to universe mean (0)">
+                        <div class="bidirectional-zero-line"></div>
+                        <div class="bidirectional-fill up" id="factor-bar-7d" style="left: 50%; width: 45%;"></div>
                       </div>
                       <span class="factor-val" id="factor-val-7d">+2.45 &sigma;</span>
                     </div>
@@ -309,8 +314,9 @@
                       <span class="factor-weight-pill">20% w</span>
                     </div>
                     <div class="factor-bar-col">
-                      <div class="factor-bar-track">
-                        <div class="factor-bar-fill up" id="factor-bar-vol" style="width: 65%;"></div>
+                      <div class="bidirectional-track" title="Z-Score relative to universe mean (0)">
+                        <div class="bidirectional-zero-line"></div>
+                        <div class="bidirectional-fill up" id="factor-bar-vol" style="left: 50%; width: 26%;"></div>
                       </div>
                       <span class="factor-val" id="factor-val-vol">+1.24 &sigma;</span>
                     </div>
@@ -474,10 +480,10 @@
         <span class="footer-text font-mono">Status: Verified Deterministic</span>
       </div>
       <div class="footer-right">
-        <button class="share-chat-btn" id="btn-post-anna-chat" title="Send quantitative alpha intelligence to Anna AI OS Agent Chat">
-          <svg class="chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span>Post to Anna Chat</span>
-        </button>
+        <span class="footer-telemetry font-mono">
+          <span class="status-dot-sm live"></span>
+          <span>Executa v1.0.9 &middot; Invariants 100% Pass</span>
+        </span>
       </div>
     </footer>
   </div>

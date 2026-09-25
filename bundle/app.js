@@ -20,9 +20,14 @@ const STANDALONE_FIXTURES = {
     { rank: 2, symbol: "BTC", name: "Bitcoin", price_usd: 64250.00, percent_change_24h: 2.40, percent_change_7d: 6.80, volume_24h_usd: 28400000000, market_cap_usd: 1260000000000, momentum_score: 8.12, parkinson_vol: 0.017, regime: "COMPRESSION", turnover_tier: "LOW_SLIPPAGE", sparkline: [60200, 61500, 62100, 61800, 63400, 63900, 64250] },
     { rank: 3, symbol: "AVAX", name: "Avalanche", price_usd: 28.90, percent_change_24h: 4.10, percent_change_7d: 9.50, volume_24h_usd: 620000000, market_cap_usd: 11500000000, momentum_score: 7.45, parkinson_vol: 0.046, regime: "TRENDING", turnover_tier: "HIGH_VELOCITY", sparkline: [26.2, 26.8, 27.1, 26.9, 27.5, 28.1, 28.9] },
     { rank: 4, symbol: "ETH", name: "Ethereum", price_usd: 3450.00, percent_change_24h: 1.85, percent_change_7d: 4.90, volume_24h_usd: 14200000000, market_cap_usd: 415000000000, momentum_score: 7.10, parkinson_vol: 0.024, regime: "TRENDING", turnover_tier: "LOW_SLIPPAGE", sparkline: [3280, 3310, 3360, 3340, 3390, 3420, 3450] },
-    { rank: 5, symbol: "LINK", name: "Chainlink", price_usd: 12.80, percent_change_24h: 3.20, percent_change_7d: 7.40, volume_24h_usd: 480000000, market_cap_usd: 7800000000, momentum_score: 6.85, parkinson_vol: 0.038, regime: "TRENDING", turnover_tier: "MODERATE", sparkline: [11.9, 12.1, 12.3, 12.0, 12.4, 12.6, 12.8] },
-    { rank: 6, symbol: "BNB", name: "BNB Chain", price_usd: 585.00, percent_change_24h: 0.75, percent_change_7d: 2.10, volume_24h_usd: 1100000000, market_cap_usd: 86000000000, momentum_score: 5.90, parkinson_vol: 0.018, regime: "COMPRESSION", turnover_tier: "LOW_SLIPPAGE", sparkline: [572, 575, 579, 577, 581, 583, 585] },
-    { rank: 7, symbol: "NEAR", name: "NEAR Protocol", price_usd: 4.95, percent_change_24h: -1.20, percent_change_7d: 3.50, volume_24h_usd: 310000000, market_cap_usd: 5400000000, momentum_score: 4.80, parkinson_vol: 0.061, regime: "EXPANSION", turnover_tier: "MODERATE", sparkline: [4.75, 4.82, 5.10, 5.02, 4.98, 5.01, 4.95] }
+    { rank: 5, symbol: "DOGE", name: "Dogecoin", price_usd: 0.115, percent_change_24h: 3.20, percent_change_7d: 8.40, volume_24h_usd: 850000000, market_cap_usd: 16800000000, momentum_score: 6.95, parkinson_vol: 0.041, regime: "TRENDING", turnover_tier: "HIGH_VELOCITY", sparkline: [0.106, 0.108, 0.112, 0.110, 0.113, 0.114, 0.115] },
+    { rank: 6, symbol: "LINK", name: "Chainlink", price_usd: 12.80, percent_change_24h: 3.20, percent_change_7d: 7.40, volume_24h_usd: 480000000, market_cap_usd: 7800000000, momentum_score: 6.85, parkinson_vol: 0.038, regime: "TRENDING", turnover_tier: "MODERATE", sparkline: [11.9, 12.1, 12.3, 12.0, 12.4, 12.6, 12.8] },
+    { rank: 7, symbol: "SUI", name: "Sui", price_usd: 1.85, percent_change_24h: 6.40, percent_change_7d: 18.20, volume_24h_usd: 920000000, market_cap_usd: 5200000000, momentum_score: 6.40, parkinson_vol: 0.068, regime: "EXPANSION", turnover_tier: "HIGH_VELOCITY", sparkline: [1.55, 1.62, 1.68, 1.65, 1.72, 1.79, 1.85] },
+    { rank: 8, symbol: "BNB", name: "BNB Chain", price_usd: 585.00, percent_change_24h: 0.75, percent_change_7d: 2.10, volume_24h_usd: 1100000000, market_cap_usd: 86000000000, momentum_score: 5.90, parkinson_vol: 0.018, regime: "COMPRESSION", turnover_tier: "LOW_SLIPPAGE", sparkline: [572, 575, 579, 577, 581, 583, 585] },
+    { rank: 9, symbol: "XRP", name: "XRP", price_usd: 0.58, percent_change_24h: -0.40, percent_change_7d: -1.20, volume_24h_usd: 1350000000, market_cap_usd: 32800000000, momentum_score: 5.15, parkinson_vol: 0.022, regime: "COMPRESSION", turnover_tier: "LOW_SLIPPAGE", sparkline: [0.59, 0.585, 0.582, 0.584, 0.581, 0.580, 0.58] },
+    { rank: 10, symbol: "NEAR", name: "NEAR Protocol", price_usd: 4.95, percent_change_24h: -1.20, percent_change_7d: 3.50, volume_24h_usd: 310000000, market_cap_usd: 5400000000, momentum_score: 4.80, parkinson_vol: 0.061, regime: "EXPANSION", turnover_tier: "MODERATE", sparkline: [4.75, 4.82, 5.10, 5.02, 4.98, 5.01, 4.95] },
+    { rank: 11, symbol: "ADA", name: "Cardano", price_usd: 0.36, percent_change_24h: 1.10, percent_change_7d: 3.40, volume_24h_usd: 340000000, market_cap_usd: 12900000000, momentum_score: 4.50, parkinson_vol: 0.028, regime: "COMPRESSION", turnover_tier: "LOW_SLIPPAGE", sparkline: [0.348, 0.352, 0.355, 0.351, 0.356, 0.358, 0.36] },
+    { rank: 12, symbol: "APT", name: "Aptos", price_usd: 6.75, percent_change_24h: 2.90, percent_change_7d: 4.80, volume_24h_usd: 180000000, market_cap_usd: 3200000000, momentum_score: 4.10, parkinson_vol: 0.045, regime: "TRENDING", turnover_tier: "MODERATE", sparkline: [6.45, 6.52, 6.60, 6.58, 6.65, 6.70, 6.75] }
   ],
   volatility: [
     { symbol: "BTC", price_usd: 64250.00, high_24h_usd: 65100.00, low_24h_usd: 63800.00, parkinson_volatility: 0.017, regime: "COMPRESSION" },
@@ -30,6 +35,9 @@ const STANDALONE_FIXTURES = {
     { symbol: "SOL", price_usd: 152.40, high_24h_usd: 158.00, low_24h_usd: 144.00, parkinson_volatility: 0.079, regime: "EXPANSION_VOLATILE" },
     { symbol: "BNB", price_usd: 585.00, high_24h_usd: 590.00, low_24h_usd: 578.00, parkinson_volatility: 0.018, regime: "COMPRESSION" },
     { symbol: "AVAX", price_usd: 28.90, high_24h_usd: 30.10, low_24h_usd: 27.50, parkinson_volatility: 0.076, regime: "EXPANSION_VOLATILE" },
+    { symbol: "DOGE", price_usd: 0.115, high_24h_usd: 0.122, low_24h_usd: 0.111, parkinson_volatility: 0.041, regime: "TRENDING" },
+    { symbol: "SUI", price_usd: 1.85, high_24h_usd: 1.94, low_24h_usd: 1.78, parkinson_volatility: 0.068, regime: "EXPANSION_VOLATILE" },
+    { symbol: "XRP", price_usd: 0.58, high_24h_usd: 0.60, low_24h_usd: 0.57, parkinson_volatility: 0.022, regime: "COMPRESSION" },
     { symbol: "LINK", price_usd: 12.80, high_24h_usd: 13.15, low_24h_usd: 12.45, parkinson_volatility: 0.046, regime: "TRENDING" }
   ],
   liquidity: [
@@ -37,12 +45,19 @@ const STANDALONE_FIXTURES = {
     { symbol: "ETH", market_cap_usd: 415000000000, volume_24h_usd: 14200000000, turnover_ratio: 0.0342, turnover_tier: "LOW_SLIPPAGE (<0.03%)", slippage_risk: "MINIMAL" },
     { symbol: "SOL", market_cap_usd: 71000000000, volume_24h_usd: 3850000000, turnover_ratio: 0.0542, turnover_tier: "HIGH_VELOCITY (<0.05%)", slippage_risk: "MODERATE" },
     { symbol: "BNB", market_cap_usd: 86000000000, volume_24h_usd: 1100000000, turnover_ratio: 0.0128, turnover_tier: "LOW_SLIPPAGE (<0.04%)", slippage_risk: "MINIMAL" },
-    { symbol: "AVAX", market_cap_usd: 11500000000, volume_24h_usd: 620000000, turnover_ratio: 0.0539, turnover_tier: "HIGH_VELOCITY (<0.10%)", slippage_risk: "MODERATE" }
+    { symbol: "XRP", market_cap_usd: 32800000000, volume_24h_usd: 1350000000, turnover_ratio: 0.0412, turnover_tier: "LOW_SLIPPAGE (<0.03%)", slippage_risk: "MINIMAL" },
+    { symbol: "DOGE", market_cap_usd: 16800000000, volume_24h_usd: 850000000, turnover_ratio: 0.0506, turnover_tier: "HIGH_VELOCITY (<0.08%)", slippage_risk: "MODERATE" },
+    { symbol: "AVAX", market_cap_usd: 11500000000, volume_24h_usd: 620000000, turnover_ratio: 0.0539, turnover_tier: "HIGH_VELOCITY (<0.10%)", slippage_risk: "MODERATE" },
+    { symbol: "SUI", market_cap_usd: 5200000000, volume_24h_usd: 920000000, turnover_ratio: 0.1769, turnover_tier: "HIGH_VELOCITY (<0.12%)", slippage_risk: "HIGH" },
+    { symbol: "LINK", market_cap_usd: 7800000000, volume_24h_usd: 480000000, turnover_ratio: 0.0615, turnover_tier: "MODERATE (<0.08%)", slippage_risk: "MODERATE" }
   ],
   quotes: {
     BTC: { symbol: "BTC", name: "Bitcoin", price_usd: 64250.00, percent_change_24h: 2.40, percent_change_7d: 6.80, volume_24h_usd: 28400000000, market_cap_usd: 1260000000000, high_24h: 65100.00, low_24h: 63800.00, momentum_score: 8.12, regime: "COMPRESSION" },
     ETH: { symbol: "ETH", name: "Ethereum", price_usd: 3450.00, percent_change_24h: 1.85, percent_change_7d: 4.90, volume_24h_usd: 14200000000, market_cap_usd: 415000000000, high_24h: 3520.00, low_24h: 3380.00, momentum_score: 7.10, regime: "TRENDING" },
-    SOL: { symbol: "SOL", name: "Solana", price_usd: 152.40, percent_change_24h: 5.80, percent_change_7d: 14.20, volume_24h_usd: 3850000000, market_cap_usd: 71000000000, high_24h: 158.00, low_24h: 144.00, momentum_score: 8.95, regime: "EXPANSION" }
+    SOL: { symbol: "SOL", name: "Solana", price_usd: 152.40, percent_change_24h: 5.80, percent_change_7d: 14.20, volume_24h_usd: 3850000000, market_cap_usd: 71000000000, high_24h: 158.00, low_24h: 144.00, momentum_score: 8.95, regime: "EXPANSION" },
+    DOGE: { symbol: "DOGE", name: "Dogecoin", price_usd: 0.115, percent_change_24h: 3.20, percent_change_7d: 8.40, volume_24h_usd: 850000000, market_cap_usd: 16800000000, high_24h: 0.122, low_24h: 0.111, momentum_score: 6.95, regime: "TRENDING" },
+    XRP: { symbol: "XRP", name: "XRP", price_usd: 0.58, percent_change_24h: -0.40, percent_change_7d: -1.20, volume_24h_usd: 1350000000, market_cap_usd: 32800000000, high_24h: 0.60, low_24h: 0.57, momentum_score: 5.15, regime: "COMPRESSION" },
+    SUI: { symbol: "SUI", name: "Sui", price_usd: 1.85, percent_change_24h: 6.40, percent_change_7d: 18.20, volume_24h_usd: 920000000, market_cap_usd: 5200000000, high_24h: 1.94, low_24h: 1.78, momentum_score: 6.40, regime: "EXPANSION" }
   }
 };
 
@@ -277,6 +292,23 @@ function renderTableRows() {
   });
 }
 
+// Calibrated bidirectional bar calculation relative to universe mean (0 sigma)
+function applyBidirectionalBar(el, zVal) {
+  if (!el) return;
+  const z = typeof zVal === "number" && !isNaN(zVal) ? zVal : 0;
+  const clampedMag = Math.min(Math.max(Math.abs(z) / 3.0, 0.04), 1.0);
+  const barWidthPct = clampedMag * 50;
+  if (z >= 0) {
+    el.style.left = "50%";
+    el.style.width = `${barWidthPct.toFixed(1)}%`;
+    el.className = "bidirectional-fill up";
+  } else {
+    el.style.left = `${(50 - barWidthPct).toFixed(1)}%`;
+    el.style.width = `${barWidthPct.toFixed(1)}%`;
+    el.className = "bidirectional-fill down";
+  }
+}
+
 // Select an asset and populate the Right Inspector Detail Pane
 function selectAsset(symbol) {
   const asset = currentAssets.find(a => a.symbol === symbol) || currentAssets[0];
@@ -341,7 +373,7 @@ function selectAsset(symbol) {
     }
   }
 
-  // Z-Score Factors
+  // Z-Score Factors with calibrated bidirectional bars
   const z24 = asset.z24 ?? 1.2;
   const z7d = asset.z7d ?? 1.8;
   const zVol = asset.zVol ?? 0.9;
@@ -349,9 +381,9 @@ function selectAsset(symbol) {
   if (elVal7d) elVal7d.textContent = `${z7d >= 0 ? '+' : ''}${z7d.toFixed(2)} σ`;
   if (elValVol) elValVol.textContent = `${zVol >= 0 ? '+' : ''}${zVol.toFixed(2)} σ`;
 
-  if (elBar24) elBar24.style.width = `${Math.min(Math.max((z24 + 3) * 16.6, 5), 100)}%`;
-  if (elBar7d) elBar7d.style.width = `${Math.min(Math.max((z7d + 3) * 16.6, 5), 100)}%`;
-  if (elBarVol) elBarVol.style.width = `${Math.min(Math.max((zVol + 3) * 16.6, 5), 100)}%`;
+  applyBidirectionalBar(elBar24, z24);
+  applyBidirectionalBar(elBar7d, z7d);
+  applyBidirectionalBar(elBarVol, zVol);
 
   // Risk & Volatility
   const vol = (asset.parkinson_vol ?? 0.035) * 100;

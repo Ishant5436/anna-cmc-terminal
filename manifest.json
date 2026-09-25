@@ -35,6 +35,7 @@
         "title": "CMC Alpha Terminal",
         "default": true,
         "entry": "index.html",
+        "mobile_entry": "index.html",
         "min_size": {
           "w": 820,
           "h": 560

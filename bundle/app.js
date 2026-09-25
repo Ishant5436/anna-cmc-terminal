@@ -1,5 +1,5 @@
 /**
- * CMC Alpha Terminal - Institutional Quant Controller (v1.0.10)
+ * CMC Alpha Terminal - Institutional Quant Controller (v1.0.11)
  * Master-Detail Split View · Reactive Sorting · Tabular Numerics · Weight Engine
  */
 
@@ -11,6 +11,13 @@ function getToolId() {
     && window.__ANNA_TOOL_IDS__
     && window.__ANNA_TOOL_IDS__[EXECUTA_HANDLE])
   || DEV_FALLBACK_TOOL_ID;
+}
+
+function assertInvariant(condition, message) {
+  if (!condition) {
+    console.error("Invariant Violation: " + message);
+    throw new Error("Invariant Violation: " + message);
+  }
 }
 
 // Institutional Market Dataset Fixtures
@@ -733,24 +740,6 @@ function initSearchAndFilterEvents() {
 
 // Context-Aware Anna Chat Integration
 function initAnnaChatIntegration() {
-  // Post Summary Button
-  document.getElementById("btn-post-anna-chat")?.addEventListener("click", async () => {
-    const topAsset = filteredAssets[0] || currentAssets[0];
-    const digest = `**[ALPHA DIGEST] CMC Quantitative Market Summary**\n\n- **Macro Breadth:** Advance/Decline \`1.85:1\` (Bullish Accumulation)\n- **Top Momentum Asset:** \`${topAsset.symbol}\` (Alpha Score: \`${topAsset.momentum_score}/10\`, 7d: \`+${topAsset.percent_change_7d}%\`)\n- **Active Universe:** \`Top 100 Large Caps\` (Min Volume: \`$500M+\`)\n- **Weights:** \`24H ${parseInt(quantWeights.w24*100)}% / 7D ${parseInt(quantWeights.w7d*100)}% / VOL ${parseInt(quantWeights.wVol*100)}%\``;
-
-    if (anna && anna.chat && typeof anna.chat.write_message === "function") {
-      try {
-        await anna.chat.write_message({ message: digest });
-        alert("Alpha intelligence digest posted to Anna Chat!");
-        return;
-      } catch (err) {
-        console.warn("Host chat dispatch skipped:", err);
-      }
-    }
-    navigator.clipboard.writeText(digest);
-    alert("Copied formatted alpha digest to clipboard (ready to paste in Anna Chat)!");
-  });
-
   // Ask Anna about Selected Asset (Debounced to prevent RPC spam)
   let isDispatchingChat = false;
   document.getElementById("btn-ask-anna-selected")?.addEventListener("click", async () => {
@@ -909,66 +898,475 @@ async function renderLiquidityDepth() {
   }).join("");
 }
 
+// Kyle's Lambda Orderbook Slippage Model
+function calcKyleLambdaSlippage(orderSize, adv, dailyVol, gamma = 0.5) {
+  assertInvariant(orderSize > 0, "orderSize must be positive");
+  assertInvariant(adv > 0, "adv must be positive");
+  assertInvariant(dailyVol > 0, "dailyVol must be positive");
+  const ratio = Math.min(orderSize / Math.max(adv, 1.0), 1.0);
+  const slippageBps = gamma * dailyVol * Math.sqrt(ratio) * 10000.0;
+  assertInvariant(slippageBps >= 0, "slippageBps must be non-negative");
+  return slippageBps;
+}
+
+function getExecutionRouting(slippageBps) {
+  assertInvariant(typeof slippageBps === "number", "slippageBps must be numeric");
+  assertInvariant(!isNaN(slippageBps), "slippageBps cannot be NaN");
+  if (slippageBps <= 5.0) return { label: "Instant Market", cls: "instant" };
+  if (slippageBps <= 15.0) return { label: "TWAP 15m", cls: "twap" };
+  if (slippageBps <= 35.0) return { label: "VWAP 1h", cls: "vwap" };
+  return { label: "POV 5% OTC", cls: "dark" };
+}
+
+function renderSlippageMatrix(item) {
+  assertInvariant(item !== null && typeof item === "object", "item must be valid object");
+  const container = document.getElementById("slippage-depth-matrix");
+  if (!container) return;
+  assertInvariant(container instanceof HTMLElement, "container must be HTMLElement");
+
+  const adv = item.volume_24h_usd || 1000000000;
+  const vol = item.parkinson_vol || item.parkinson_volatility || 0.035;
+  const tiers = [10000, 50000, 100000, 500000, 1000000, 5000000];
+
+  let rowsHtml = "";
+  for (let i = 0; i < tiers.length && i < 10; i++) {
+    const q = tiers[i];
+    const bps = calcKyleLambdaSlippage(q, adv, vol);
+    const costUsd = (q * (bps / 10000.0));
+    const routing = getExecutionRouting(bps);
+    rowsHtml += `
+      <tr>
+        <td class="font-bold">${formatCurrency(q)}</td>
+        <td class="col-num ${bps > 20 ? 'down' : 'up'}">${bps.toFixed(1)} bps</td>
+        <td class="col-num">${formatCurrency(costUsd)}</td>
+        <td><span class="exec-routing-pill ${routing.cls}">${routing.label}</span></td>
+      </tr>`;
+  }
+
+  container.innerHTML = `
+    <div class="slippage-header">
+      <span class="slippage-title">Kyle's Lambda Slippage Depth Matrix</span>
+      <span class="slippage-formula-note font-mono">&Delta;P/P = 0.5&middot;&sigma;&middot;&radic;(Q/ADV)</span>
+    </div>
+    <table class="slippage-table font-mono">
+      <thead>
+        <tr>
+          <th>Order Size</th>
+          <th>Est. Slippage</th>
+          <th>Impact Drag</th>
+          <th>Execution Routing</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>`;
+}
+
+// 5-Axis Multi-Factor Radar Engine
+function calcRadarAxisPoints(cx, cy, radius, numAxes) {
+  assertInvariant(radius > 0, "radius must be positive");
+  assertInvariant(numAxes === 5, "numAxes must be 5 for pentagon");
+  const points = [];
+  for (let i = 0; i < numAxes && i < 10; i++) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
+    points.push({
+      x: cx + radius * Math.cos(angle),
+      y: cy + radius * Math.sin(angle),
+      angle
+    });
+  }
+  return points;
+}
+
+function renderFactorRadar(item) {
+  assertInvariant(item !== null && typeof item === "object", "item must be valid object");
+  const container = document.getElementById("factor-radar-container");
+  if (!container) return;
+  assertInvariant(container instanceof HTMLElement, "container must be HTMLElement");
+
+  const cx = 130, cy = 90, r = 64;
+  const axes = [
+    { label: "Momentum", val: Math.min(1.0, Math.max(0.1, ((item.percent_change_24h || 0) + 10) / 20)) },
+    { label: "Trend", val: Math.min(1.0, Math.max(0.1, ((item.percent_change_7d || 0) + 15) / 30)) },
+    { label: "Liquidity", val: Math.min(1.0, Math.max(0.1, ((item.turnover_ratio || 0.04) / 0.12))) },
+    { label: "Vol Quality", val: Math.min(1.0, Math.max(0.1, 1.0 - ((item.parkinson_vol || 0.03) / 0.08))) },
+    { label: "Dominance", val: Math.min(1.0, Math.max(0.1, (Math.log10(Math.max(item.market_cap_usd || 1e9, 1e7)) - 7) / 5)) }
+  ];
+
+  const outerPoints = calcRadarAxisPoints(cx, cy, r, 5);
+  let ringsHtml = "";
+  [0.33, 0.66, 1.0].forEach(frac => {
+    const ringPts = calcRadarAxisPoints(cx, cy, r * frac, 5);
+    const ptsStr = ringPts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+    ringsHtml += `<polygon points="${ptsStr}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>`;
+  });
+
+  let axisLinesHtml = "";
+  let labelsHtml = "";
+  outerPoints.forEach((p, idx) => {
+    axisLinesHtml += `<line x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>`;
+    const lx = cx + (r + 14) * Math.cos(p.angle);
+    const ly = cy + (r + 14) * Math.sin(p.angle);
+    labelsHtml += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" fill="#8b95a5" font-size="8.5" font-family="var(--font-mono)" text-anchor="middle" dominant-baseline="middle">${axes[idx].label}</text>`;
+  });
+
+  const polyPts = axes.map((a, idx) => {
+    const ar = r * a.val;
+    const ax = cx + ar * Math.cos(outerPoints[idx].angle);
+    const ay = cy + ar * Math.sin(outerPoints[idx].angle);
+    return `${ax.toFixed(1)},${ay.toFixed(1)}`;
+  }).join(" ");
+
+  container.innerHTML = `
+    <div class="radar-header">
+      <span class="radar-title">5-Axis Factor Diagnostic</span>
+      <span class="font-mono" style="font-size: 10px; color: var(--quant-blue);">Cross-Sectional</span>
+    </div>
+    <div class="radar-stage">
+      <svg class="radar-svg" viewBox="0 0 260 180">
+        ${ringsHtml}
+        ${axisLinesHtml}
+        <polygon points="${polyPts}" fill="rgba(59, 130, 246, 0.25)" stroke="#3b82f6" stroke-width="1.8"/>
+        ${labelsHtml}
+      </svg>
+    </div>`;
+}
+
+// Institutional Risk Grid
+function renderRiskGrid(item) {
+  assertInvariant(item !== null && typeof item === "object", "item must be valid object");
+  const container = document.getElementById("quant-risk-grid");
+  if (!container) return;
+  assertInvariant(container instanceof HTMLElement, "container must be HTMLElement");
+
+  const price = item.price_usd || 1;
+  const vol = item.parkinson_vol || item.parkinson_volatility || 0.035;
+  const ret24 = (item.percent_change_24h || 0) / 100.0;
+  const var95 = 1.645 * vol * price;
+  const rfDaily = 0.045 / 365.0;
+  const sharpe = ((ret24 - rfDaily) / Math.max(vol, 0.001)) * Math.sqrt(365);
+  const parkinsonSpread = (vol - 0.025) * 100;
+  const betaBtc = item.symbol === "BTC" ? 1.00 : (0.85 + (vol / 0.05) * 0.35);
+
+  container.innerHTML = `
+    <div class="risk-matrix-header">
+      <span class="risk-matrix-title">Institutional Risk Parameters</span>
+      <span class="font-mono" style="font-size: 10px; color: var(--muted-foreground);">1D Horizon / 95% CI</span>
+    </div>
+    <div class="quant-risk-grid font-mono">
+      <div class="risk-metric-card">
+        <span class="risk-metric-title">Parametric VaR 95%</span>
+        <span class="risk-metric-val down">-${formatCurrency(var95)}</span>
+        <span class="risk-metric-sub">1.645 &sigma; tail expectation</span>
+      </div>
+      <div class="risk-metric-card">
+        <span class="risk-metric-title">Annualized Sharpe</span>
+        <span class="risk-metric-val ${sharpe >= 0 ? 'up' : 'down'}">${sharpe.toFixed(2)}</span>
+        <span class="risk-metric-sub">r_f = 4.5% risk-free bench</span>
+      </div>
+      <div class="risk-metric-card">
+        <span class="risk-metric-title">Parkinson Spread</span>
+        <span class="risk-metric-val ${parkinsonSpread > 0 ? 'up' : 'down'}">${parkinsonSpread >= 0 ? '+' : ''}${parkinsonSpread.toFixed(2)}%</span>
+        <span class="risk-metric-sub">&sigma;_Parkinson vs. &sigma;_CC</span>
+      </div>
+      <div class="risk-metric-card">
+        <span class="risk-metric-title">Bitcoin Beta (&beta;)</span>
+        <span class="risk-metric-val" style="color: var(--quant-blue);">${betaBtc.toFixed(2)}</span>
+        <span class="risk-metric-sub">Cov(R_i, R_BTC) / Var(R_BTC)</span>
+      </div>
+    </div>`;
+}
+
+// Interactive Vector Chart Engine
+function generateDeterministicSeries(spotPrice, timeframe, dailyVol = 0.03) {
+  assertInvariant(spotPrice > 0, "spotPrice must be positive");
+  assertInvariant(typeof timeframe === "string", "timeframe must be string");
+  const pointsCount = timeframe === "24H" ? 24 : timeframe === "7D" ? 28 : timeframe === "30D" ? 30 : 45;
+  const series = [];
+  let p = spotPrice * (timeframe === "24H" ? 0.98 : timeframe === "7D" ? 0.92 : 0.82);
+  const now = Date.now();
+  const stepMs = (timeframe === "24H" ? 3600 : timeframe === "7D" ? 6 * 3600 : 24 * 3600) * 1000;
+  const startTime = now - (pointsCount * stepMs);
+
+  for (let i = 0; i < pointsCount && i < 100; i++) {
+    const pseudoNoise = Math.sin((i + 1) * 1.7) * dailyVol * 0.6 + Math.cos((i + 2) * 0.9) * dailyVol * 0.4;
+    p = p * (1 + pseudoNoise);
+    const t = startTime + (i * stepMs);
+    const v = (spotPrice * 1000) * (0.6 + Math.abs(Math.sin(i * 0.8)) * 0.8);
+    series.push({ time: t, price: p, volume: v });
+  }
+  if (series.length > 0) series[series.length - 1].price = spotPrice;
+  return series;
+}
+
+function buildSvgChartPaths(series, width, height) {
+  assertInvariant(series.length > 1, "series must have at least 2 points");
+  assertInvariant(width > 0 && height > 0, "dimensions must be positive");
+  const chartH = height - 36;
+  const minP = Math.min(...series.map(s => s.price));
+  const maxP = Math.max(...series.map(s => s.price));
+  const pSpan = Math.max(maxP - minP, 0.001);
+  const maxV = Math.max(...series.map(s => s.volume));
+
+  const pts = series.map((s, i) => {
+    const x = (i / (series.length - 1)) * width;
+    const y = chartH - ((s.price - minP) / pSpan) * (chartH - 24) - 12;
+    return { x, y, ...s };
+  });
+
+  const lineD = pts.reduce((acc, pt, i) => acc + (i === 0 ? `M ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}` : ` L ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`), "");
+  const areaD = `${lineD} L ${width} ${chartH} L 0 ${chartH} Z`;
+
+  const barW = Math.max(2, (width / series.length) - 2);
+  let volBarsHtml = "";
+  pts.forEach(pt => {
+    const bh = ((pt.volume / Math.max(maxV, 1)) * 26);
+    const by = height - bh;
+    volBarsHtml += `<rect x="${(pt.x - barW / 2).toFixed(1)}" y="${by.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" fill="rgba(59, 130, 246, 0.25)"/>`;
+  });
+
+  return { lineD, areaD, volBarsHtml, pts, minP, maxP };
+}
+
+let activeTimeframe = "7D";
+function renderInteractiveChart(symbol, tf) {
+  assertInvariant(typeof symbol === "string", "symbol must be string");
+  if (tf) activeTimeframe = tf;
+  const container = document.getElementById("inspector-chart-container");
+  if (!container) return;
+  assertInvariant(container instanceof HTMLElement, "container must be HTMLElement");
+
+  const quote = STANDALONE_FIXTURES.quotes[symbol] || STANDALONE_FIXTURES.quotes["BTC"];
+  const spotPrice = quote.price_usd || 100;
+  const series = generateDeterministicSeries(spotPrice, activeTimeframe, quote.parkinson_vol || 0.03);
+  const width = 560, height = 180;
+  const { lineD, areaD, volBarsHtml, pts, minP, maxP } = buildSvgChartPaths(series, width, height);
+
+  container.innerHTML = `
+    <div class="chart-header">
+      <div class="chart-title-group">
+        <span class="chart-title">${symbol} Price & Volume Velocity</span>
+        <span class="chart-subtitle font-mono">${formatCurrency(minP)} – ${formatCurrency(maxP)}</span>
+      </div>
+      <div class="chart-timeframe-bar">
+        ${["24H", "7D", "30D", "90D"].map(t => `<button class="timeframe-btn ${t === activeTimeframe ? 'active' : ''}" data-tf="${t}">${t}</button>`).join("")}
+      </div>
+    </div>
+    <div class="chart-stage" id="chart-stage-box">
+      <svg class="chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+        ${volBarsHtml}
+        <path d="${areaD}" fill="url(#chart-grad)"/>
+        <path d="${lineD}" fill="none" stroke="#3b82f6" stroke-width="2"/>
+        <line id="chart-crosshair-x" x1="0" y1="0" x2="0" y2="${height}" stroke="rgba(255,255,255,0.25)" stroke-dasharray="3,3" style="display:none;"/>
+        <circle id="chart-crosshair-dot" r="4" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" style="display:none;"/>
+      </svg>
+      <div id="chart-tooltip" class="chart-hud-tooltip" style="display:none;"></div>
+    </div>`;
+
+  bindChartInteractions(symbol, width, height, pts);
+}
+
+function bindChartInteractions(symbol, width, height, pts) {
+  assertInvariant(Array.isArray(pts), "pts must be array");
+  assertInvariant(width > 0, "width must be positive");
+  const container = document.getElementById("inspector-chart-container");
+  const stage = document.getElementById("chart-stage-box");
+  const lineX = document.getElementById("chart-crosshair-x");
+  const dot = document.getElementById("chart-crosshair-dot");
+  const tooltip = document.getElementById("chart-tooltip");
+  if (!stage || !container) return;
+
+  container.querySelectorAll(".timeframe-btn").forEach(btn => {
+    btn.addEventListener("click", () => renderInteractiveChart(symbol, btn.getAttribute("data-tf")));
+  });
+
+  stage.addEventListener("mousemove", (e) => {
+    const rect = stage.getBoundingClientRect();
+    const mouseX = Math.max(0, Math.min(width, ((e.clientX - rect.left) / rect.width) * width));
+    const idx = Math.min(pts.length - 1, Math.max(0, Math.round((mouseX / width) * (pts.length - 1))));
+    const pt = pts[idx];
+    if (!pt) return;
+
+    if (lineX) { lineX.setAttribute("x1", pt.x); lineX.setAttribute("x2", pt.x); lineX.style.display = "block"; }
+    if (dot) { dot.setAttribute("cx", pt.x); dot.setAttribute("cy", pt.y); dot.style.display = "block"; }
+    if (tooltip) {
+      tooltip.style.display = "flex";
+      tooltip.style.left = `${(pt.x / width) * 100}%`;
+      tooltip.style.top = `${Math.max(20, pt.y)}px`;
+      const dateStr = new Date(pt.time).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      tooltip.innerHTML = `
+        <span style="color:#8b95a5;">${dateStr}</span>
+        <span class="tooltip-price">${formatCurrency(pt.price)}</span>
+        <span style="color:#8b95a5;">Vol: ${formatCurrency(pt.volume)}</span>`;
+    }
+  });
+
+  stage.addEventListener("mouseleave", () => {
+    if (lineX) lineX.style.display = "none";
+    if (dot) dot.style.display = "none";
+    if (tooltip) tooltip.style.display = "none";
+  });
+}
+
 // Asset Inspector Standalone (Tab 4)
 async function renderAssetInspector() {
   const input = document.getElementById("inspector-search-input");
   const symbol = (input?.value || "BTC").trim().toUpperCase();
-  const stage = document.getElementById("inspector-content");
-  if (!stage) return;
+  const banner = document.getElementById("inspector-hero-banner");
+  if (!banner) return;
+  assertInvariant(typeof symbol === "string", "symbol must be string");
+  assertInvariant(banner instanceof HTMLElement, "banner must be HTMLElement");
 
-  stage.innerHTML = `<div style="text-align:center; padding: 24px; color: var(--muted-foreground);">Fetching institutional quote for ${symbol}...</div>`;
+  persistWorkspaceState("cmc_alpha_inspected_asset", symbol);
 
   const res = await callScreener("quote", { symbol });
   const rawList = normalizeArray(res);
   const item = (res && res.symbol) ? res : (rawList[0] || STANDALONE_FIXTURES.quotes[symbol] || STANDALONE_FIXTURES.quotes["BTC"]);
-  if (!item) {
-    stage.innerHTML = `<div style="color: var(--quant-red); padding: 20px;">Asset ${symbol} not found.</div>`;
-    return;
-  }
+  if (!item) return;
 
   const sym = item.symbol ?? symbol;
-  const name = item.name ?? "";
+  const name = item.name ?? resolveAssetName(sym);
   const price = item.price_usd ?? 0;
   const chg = item.percent_change_24h ?? 0;
   const isUp = chg >= 0;
-  const high = item.high_24h_usd ?? item.high_24h ?? price;
-  const low = item.low_24h_usd ?? item.low_24h ?? price;
-  const vol = item.volume_24h_usd ?? 0;
-  const score = (item.momentum_score ?? 5.0).toFixed(2);
-  const regime = item.regime ?? "TRENDING";
+  const regime = (item.regime ?? "TRENDING").replace("_", " ");
+  const regimeCls = String(regime).toLowerCase().includes("compression") ? "compression" : String(regime).toLowerCase().includes("trending") ? "trending" : "expansion";
 
-  stage.innerHTML = `
-    <div style="background: var(--card-elevated); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <div class="asset-icon-box" style="width: 38px; height: 38px; font-size: 14px;">${sym.slice(0, 3)}</div>
-        <div>
-          <h3 style="font-size: 16px; font-weight: 700; color: #ffffff;">${sym} · <span style="font-size: 12px; color: var(--muted-foreground);">${name}</span></h3>
-          <span class="regime-pill ${regime.toLowerCase()} font-mono" style="margin-top: 3px;">REGIME: ${regime}</span>
+  banner.innerHTML = `
+    <div class="hero-identity">
+      <div class="asset-icon-box" style="width: 36px; height: 36px; font-size: 13px;">${sym.slice(0, 3)}</div>
+      <div>
+        <div style="display:flex; align-items:baseline; gap:8px;">
+          <span class="hero-symbol">${sym}</span>
+          <span class="hero-name">${name}</span>
+          <span class="regime-pill ${regimeCls} font-mono">${regime}</span>
         </div>
       </div>
-      <div style="text-align: right;" class="font-mono">
-        <span style="font-size: 18px; font-weight: 700; color: #ffffff;">${formatCurrency(price)}</span><br>
-        <span class="${isUp ? 'up' : 'down'} font-bold" style="font-size: 11px;">
-          ${isUp ? '▲ +' : '▼ '}${chg.toFixed(2)}% (24h)
-        </span>
-      </div>
     </div>
+    <div class="hero-metrics">
+      <div class="hero-price-block">
+        <span class="hero-price">${formatCurrency(price)}</span>
+        <span class="hero-change ${isUp ? 'up' : 'down'}">${isUp ? '▲ +' : '▼ '}${chg.toFixed(2)}%</span>
+      </div>
+    </div>`;
 
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-mono;">
-      <div class="detail-card">
-        <span class="card-caption">24H Range</span>
-        <span style="font-size: 12px; font-weight: 700; color: #ffffff;">${formatCurrency(low)} – ${formatCurrency(high)}</span>
-      </div>
-      <div class="detail-card">
-        <span class="card-caption">24H Volume</span>
-        <span style="font-size: 12px; font-weight: 700; color: #ffffff;">${formatCurrency(vol)}</span>
-      </div>
-      <div class="detail-card">
-        <span class="card-caption">Alpha Score</span>
-        <span style="font-size: 12px; font-weight: 700; color: var(--quant-green);">${score} / 10.0</span>
-      </div>
-    </div>
-  `;
+  renderInteractiveChart(sym);
+  renderSlippageMatrix(item);
+  renderFactorRadar(item);
+  renderRiskGrid(item);
+}
+
+// Bloomberg Terminal Keyboard Shortcuts Engine
+function initKeyboardEngine() {
+  assertInvariant(typeof window !== "undefined", "window must be defined");
+  const shortcutsModal = document.getElementById("shortcuts-modal");
+  const btnCloseShortcuts = document.getElementById("btn-close-shortcuts-modal");
+  const btnCloseOk = document.getElementById("btn-close-shortcuts-ok");
+  const btnKeys = document.getElementById("btn-open-shortcuts");
+
+  const toggleModal = () => shortcutsModal?.classList.toggle("hidden");
+  btnKeys?.addEventListener("click", toggleModal);
+  btnCloseShortcuts?.addEventListener("click", () => shortcutsModal?.classList.add("hidden"));
+  btnCloseOk?.addEventListener("click", () => shortcutsModal?.classList.add("hidden"));
+
+  window.addEventListener("keydown", (e) => {
+    const activeEl = document.activeElement;
+    const isTyping = activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA");
+
+    if (e.key === "Escape") {
+      document.querySelectorAll(".modal-backdrop").forEach(m => m.classList.add("hidden"));
+      if (isTyping) activeEl.blur();
+      return;
+    }
+    if (isTyping) return;
+
+    if (["1", "2", "3", "4"].includes(e.key)) {
+      e.preventDefault();
+      switchTabByIndex(parseInt(e.key) - 1);
+    } else if (e.key === "j" || e.key === "ArrowDown") {
+      e.preventDefault();
+      navigateTableRows(1);
+    } else if (e.key === "k" || e.key === "ArrowUp") {
+      e.preventDefault();
+      navigateTableRows(-1);
+    } else if (e.key === "/") {
+      e.preventDefault();
+      document.getElementById("filter-search-input")?.focus();
+    } else if (e.key === "r" || e.key === "R") {
+      e.preventDefault();
+      renderMomentumScreen();
+    } else if (e.key === "?") {
+      e.preventDefault();
+      toggleModal();
+    }
+  });
+  assertInvariant(shortcutsModal !== null, "shortcuts modal must be present in DOM");
+}
+
+function switchTabByIndex(idx) {
+  assertInvariant(idx >= 0 && idx <= 3, "tab index must be between 0 and 3");
+  const tabs = document.querySelectorAll(".nav-tab");
+  assertInvariant(tabs.length >= 4, "must have at least 4 tabs");
+  if (tabs[idx]) tabs[idx].click();
+}
+
+function navigateTableRows(direction) {
+  assertInvariant(direction === 1 || direction === -1, "direction must be +1 or -1");
+  const rows = Array.from(document.querySelectorAll("#momentum-tbody tr"));
+  if (rows.length === 0) return;
+  assertInvariant(rows.length > 0, "table must have rows");
+
+  let currIdx = rows.findIndex(r => r.classList.contains("selected"));
+  if (currIdx === -1) currIdx = direction > 0 ? -1 : rows.length;
+  const nextIdx = Math.max(0, Math.min(rows.length - 1, currIdx + direction));
+  const targetRow = rows[nextIdx];
+  if (targetRow) {
+    targetRow.click();
+    targetRow.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+}
+
+// Workspace Persistence Engine
+function initWorkspacePersistence() {
+  assertInvariant(typeof localStorage !== "undefined", "localStorage must be available");
+  try {
+    const savedWeights = localStorage.getItem("cmc_alpha_weights");
+    if (savedWeights) {
+      quantWeights = JSON.parse(savedWeights);
+      const badgeLabel = document.getElementById("weights-badge-label");
+      if (badgeLabel) {
+        badgeLabel.textContent = `24H ${parseInt(quantWeights.w24 * 100)}% · 7D ${parseInt(quantWeights.w7d * 100)}% · VOL ${parseInt(quantWeights.wVol * 100)}%`;
+      }
+    }
+    const savedAsset = localStorage.getItem("cmc_alpha_inspected_asset");
+    if (savedAsset) {
+      const input = document.getElementById("inspector-search-input");
+      if (input) input.value = savedAsset;
+    }
+    const savedTab = localStorage.getItem("cmc_alpha_active_tab");
+    if (savedTab && savedTab !== "tab-momentum") {
+      const tabBtn = document.querySelector(`.nav-tab[data-tab="${savedTab}"]`);
+      if (tabBtn) tabBtn.click();
+    }
+  } catch (err) {
+    console.warn("Storage restore error:", err);
+  }
+  assertInvariant(quantWeights !== null, "quantWeights must be defined");
+}
+
+function persistWorkspaceState(key, value) {
+  assertInvariant(typeof key === "string" && key.length > 0, "key must be non-empty string");
+  assertInvariant(value !== undefined, "value must be defined");
+  try {
+    localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
+  } catch (err) {
+    console.warn("Storage persist error:", err);
+  }
 }
 
 // Navigation Tabs
@@ -980,6 +1378,8 @@ document.querySelectorAll(".nav-tab").forEach(btn => {
     const target = btn.getAttribute("data-tab");
     const panel = document.getElementById(target);
     if (panel) panel.classList.add("active");
+    persistWorkspaceState("cmc_alpha_active_tab", target);
+    if (target === "tab-inspector") renderAssetInspector();
   });
 });
 
@@ -993,6 +1393,8 @@ window.addEventListener("DOMContentLoaded", () => {
   initExportUtilities();
   initSearchAndFilterEvents();
   initAnnaChatIntegration();
+  initKeyboardEngine();
+  initWorkspacePersistence();
 
   document.getElementById("btn-refresh-volatility")?.addEventListener("click", renderVolatilityRegimes);
   document.getElementById("btn-refresh-liquidity")?.addEventListener("click", renderLiquidityDepth);

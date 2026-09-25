@@ -21,7 +21,7 @@
         <div class="brand-meta">
           <div class="brand-title-row">
             <span class="brand-title">CMC Alpha</span>
-            <span class="hud-badge">v1.0.10</span>
+            <span class="hud-badge">v1.0.11</span>
           </div>
         </div>
       </div>
@@ -29,18 +29,22 @@
       <!-- Segmented Control Navigation (shadcn Tabs Pattern) -->
       <nav class="nav-segment-bar" aria-label="Terminal views">
         <button class="nav-tab active" data-tab="tab-momentum">
+          <kbd class="kbd-badge">1</kbd>
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
           <span>Momentum</span>
         </button>
         <button class="nav-tab" data-tab="tab-volatility">
+          <kbd class="kbd-badge">2</kbd>
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
           <span>Volatility</span>
         </button>
         <button class="nav-tab" data-tab="tab-liquidity">
+          <kbd class="kbd-badge">3</kbd>
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           <span>Liquidity</span>
         </button>
         <button class="nav-tab" data-tab="tab-inspector">
+          <kbd class="kbd-badge">4</kbd>
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <span>Inspector</span>
         </button>
@@ -48,6 +52,11 @@
 
       <!-- Toolbar Right: Density Toggle & Differentiated Connection Beacon -->
       <div class="header-status-group">
+        <button class="density-toggle-btn font-mono" id="btn-open-shortcuts" title="Bloomberg Hotkeys (?)">
+          <kbd class="kbd-badge">?</kbd>
+          <span>Keys</span>
+        </button>
+
         <button class="density-toggle-btn font-mono" id="btn-toggle-density" title="Toggle table row density (Compact / Comfortable)">
           <svg class="density-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           <span id="density-label">Compact</span>
@@ -465,8 +474,8 @@
         <div class="panel-glass-surface">
           <div class="panel-headline-row">
             <div>
-              <h2 class="panel-heading">Asset Quote & Multi-Factor Diagnostic</h2>
-              <p class="panel-subheading">Detailed factor breakdown, Parkinson volatility, and liquidity depth per asset.</p>
+              <h2 class="panel-heading">Institutional Quantitative Asset Diagnostic</h2>
+              <p class="panel-subheading">High-resolution interactive charting, Kyle's Lambda slippage depth, 5-axis factor radar, and risk metrics.</p>
             </div>
             <div class="asset-search-wrap">
               <input type="text" id="inspector-search-input" class="hud-input font-mono" value="BTC" placeholder="Symbol (e.g. BTC, ETH)..." spellcheck="false" />
@@ -478,7 +487,17 @@
 
           <!-- Inspector Content Stage -->
           <div class="inspector-stage" id="inspector-content">
-            <!-- Dynamically populated by app.js -->
+            <div id="inspector-hero-banner"></div>
+            <div class="inspector-split-grid">
+              <div class="inspector-col-left">
+                <div id="inspector-chart-container" class="chart-container"></div>
+                <div id="slippage-depth-matrix" class="slippage-matrix-container"></div>
+              </div>
+              <div class="inspector-col-right">
+                <div id="factor-radar-container" class="radar-container"></div>
+                <div id="quant-risk-grid" class="risk-matrix-container"></div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -496,7 +515,7 @@
       <div class="footer-right">
         <span class="footer-telemetry font-mono">
           <span class="status-dot-sm live"></span>
-          <span>Executa v1.0.9 &middot; Invariants 100% Pass</span>
+          <span>Executa v1.0.11 &middot; Invariants 100% Pass</span>
         </span>
       </div>
     </footer>
@@ -608,6 +627,43 @@
 
       <div class="modal-footer">
         <button class="action-btn-primary btn-full-width" id="btn-close-methodology-ok">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bloomberg Terminal Shortcuts Modal -->
+  <div class="modal-backdrop hidden" id="shortcuts-modal" role="dialog" aria-modal="true" aria-labelledby="shortcuts-modal-title">
+    <div class="modal-card shortcuts-modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">⌨</span>
+          <h3 class="modal-title" id="shortcuts-modal-title">Bloomberg Terminal Hotkeys</h3>
+        </div>
+        <button class="modal-close-btn" id="btn-close-shortcuts-modal" aria-label="Close shortcuts modal">&times;</button>
+      </div>
+
+      <div class="shortcuts-body font-mono">
+        <div class="shortcut-group">
+          <div class="shortcut-group-title">Navigation & Tabs</div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">1</kbd></span><span class="shortcut-desc">Momentum Screener View</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">2</kbd></span><span class="shortcut-desc">Volatility Regime Matrix</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">3</kbd></span><span class="shortcut-desc">Liquidity Risk Screener</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">4</kbd></span><span class="shortcut-desc">Quantitative Asset Inspector</span></div>
+        </div>
+
+        <div class="shortcut-group">
+          <div class="shortcut-group-title">Selection & Interaction</div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">j</kbd> / <kbd class="kbd-badge">↓</kbd></span><span class="shortcut-desc">Select Next Asset</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">k</kbd> / <kbd class="kbd-badge">↑</kbd></span><span class="shortcut-desc">Select Previous Asset</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">/</kbd></span><span class="shortcut-desc">Focus Search Input</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">r</kbd></span><span class="shortcut-desc">Recalculate Alpha Scores</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">?</kbd></span><span class="shortcut-desc">Open Keyboard Shortcuts</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">Esc</kbd></span><span class="shortcut-desc">Close Modals / Deselect</span></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-btn-primary btn-full-width" id="btn-close-shortcuts-ok">Dismiss</button>
       </div>
     </div>
   </div>

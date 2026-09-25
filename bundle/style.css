@@ -1149,7 +1149,6 @@ button:focus-visible {
   gap: 6px;
 }
 
-.factor-bar-track,
 .bidirectional-track {
   position: relative;
   flex: 1;
@@ -1169,8 +1168,7 @@ button:focus-visible {
   z-index: 2;
 }
 
-.bidirectional-fill,
-.factor-bar-fill {
+.bidirectional-fill {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -1178,14 +1176,12 @@ button:focus-visible {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.bidirectional-fill.up,
-.factor-bar-fill.up {
+.bidirectional-fill.up {
   background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
   box-shadow: 0 0 6px rgba(52, 211, 153, 0.4);
 }
 
-.bidirectional-fill.down,
-.factor-bar-fill.down {
+.bidirectional-fill.down {
   background: linear-gradient(270deg, #ef4444 0%, #f87171 100%);
   box-shadow: 0 0 6px rgba(248, 113, 113, 0.4);
 }
@@ -1777,55 +1773,6 @@ body.density-compact .filter-strip {
   color: #c9cdd4;
 }
 
-.volatility-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 8px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.vol-asset-card {
-  background: var(--card-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.vol-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.vol-symbol {
-  font-size: 12px;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.vol-regime-tag {
-  font-size: 9px;
-  font-weight: 600;
-  padding: 1px 4px;
-  border-radius: 3px;
-}
-
-.vol-metrics-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10.5px;
-  color: var(--muted-foreground);
-}
-
-.vol-val {
-  color: #ffffff;
-  font-weight: 600;
-}
-
 /* ==========================================================================
    Asset Inspector (Tab 4 Standalone)
    ========================================================================== */
@@ -1843,11 +1790,6 @@ body.density-compact .filter-strip {
   padding: 4px 8px;
   font-size: 12px;
   outline: none;
-}
-
-.inspector-stage {
-  flex: 1;
-  overflow-y: auto;
 }
 
 /* ==========================================================================
@@ -1879,33 +1821,6 @@ body.density-compact .filter-strip {
 
 .bullet {
   color: var(--border);
-}
-
-.share-chat-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--card);
-  color: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.share-chat-btn:hover {
-  background: var(--card-hover);
-  border-color: rgba(255, 255, 255, 0.25);
-}
-
-.chat-icon {
-  width: 12px;
-  height: 12px;
-  color: var(--quant-green);
 }
 
 .footer-telemetry {
@@ -2023,4 +1938,451 @@ body.density-compact .filter-strip {
     height: auto;
     padding: 8px 4px;
   }
+}
+
+/* ==========================================================================
+   Bloomberg Hotkeys & Kbd Badges
+   ========================================================================== */
+
+.kbd-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--muted-foreground);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-medium);
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+  vertical-align: middle;
+}
+
+.nav-tab .kbd-badge {
+  margin-right: 4px;
+  color: #8b95a5;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.nav-tab.active .kbd-badge {
+  color: #ffffff;
+  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.shortcuts-modal-card {
+  max-width: 520px;
+}
+
+.shortcuts-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 6px 0;
+}
+
+.shortcut-group-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--quant-blue);
+  margin-bottom: 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 11px;
+}
+
+.shortcut-keys {
+  display: flex;
+  gap: 4px;
+}
+
+.shortcut-desc {
+  color: var(--foreground);
+}
+
+/* ==========================================================================
+   Tab 4: Institutional Asset Inspector Stage
+   ========================================================================== */
+
+.inspector-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.inspector-hero-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card-elevated);
+  border: 1px solid var(--border-medium);
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+.hero-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-symbol {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.hero-name {
+  font-size: 11.5px;
+  color: var(--muted-foreground);
+}
+
+.hero-metrics {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-mono);
+}
+
+.hero-price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.hero-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.hero-change {
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.inspector-split-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.inspector-col-left,
+.inspector-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Chart Container & Stage */
+.chart-container {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.chart-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.chart-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--foreground);
+}
+
+.chart-subtitle {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+
+.chart-timeframe-bar {
+  display: flex;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px;
+  border-radius: 3px;
+  border: 1px solid var(--border-subtle);
+}
+
+.timeframe-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.timeframe-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.timeframe-btn.active {
+  color: #ffffff;
+  background: var(--quant-blue);
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
+}
+
+.chart-stage {
+  position: relative;
+  width: 100%;
+  height: 200px;
+}
+
+.chart-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.chart-hud-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(15, 19, 25, 0.95);
+  border: 1px solid var(--quant-blue-border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  border-radius: 3px;
+  padding: 5px 8px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 20;
+  transform: translate(-50%, -115%);
+  white-space: nowrap;
+}
+
+.chart-hud-tooltip .tooltip-price {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Slippage Depth Matrix */
+.slippage-matrix-container {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+
+.slippage-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.slippage-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.slippage-formula-note {
+  font-size: 9.5px;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+}
+
+.slippage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10.5px;
+}
+
+.slippage-table th {
+  text-align: left;
+  padding: 4px 6px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  border-bottom: 1px solid var(--border-medium);
+}
+
+.slippage-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.exec-routing-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.exec-routing-pill.instant {
+  background: var(--quant-green-bg);
+  border: 1px solid var(--quant-green-border);
+  color: var(--quant-green);
+}
+
+.exec-routing-pill.twap {
+  background: var(--quant-blue-bg);
+  border: 1px solid var(--quant-blue-border);
+  color: var(--quant-blue);
+}
+
+.exec-routing-pill.vwap {
+  background: var(--quant-amber-bg);
+  border: 1px solid var(--quant-amber-border);
+  color: var(--quant-amber);
+}
+
+.exec-routing-pill.dark {
+  background: var(--quant-red-bg);
+  border: 1px solid var(--quant-red-border);
+  color: var(--quant-red);
+}
+
+/* 5-Axis Factor Radar */
+.radar-container {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.radar-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.radar-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.radar-stage {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radar-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Institutional Risk Matrix Grid */
+.risk-matrix-container {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+
+.risk-matrix-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.risk-matrix-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.quant-risk-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.risk-metric-card {
+  background: var(--card-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.risk-metric-title {
+  font-size: 9.5px;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.risk-metric-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.risk-metric-sub {
+  font-size: 9px;
+  color: #8b95a5;
+  font-family: var(--font-mono);
 }

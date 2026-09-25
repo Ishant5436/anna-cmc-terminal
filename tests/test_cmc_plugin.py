@@ -3,19 +3,18 @@ TDD Unit & Invariant Test Suite for CMC Alpha Screener Executa Plugin.
 Tests JSON-RPC 2.0 dispatch, method execution, mathematical properties, and error states.
 """
 
-import sys
 import os
+import sys
 
 # Add executas/cmc-screener to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "executas", "cmc-screener")))
 
 from cmc_plugin import (
+    calc_momentum_score,
+    calc_parkinson_volatility,
     handle_describe,
     handle_health,
     handle_invoke,
-    calc_parkinson_volatility,
-    calc_momentum_score,
-    tool_screener,
 )
 
 
@@ -214,5 +213,55 @@ def test_bundle_volatility_table_contract():
     assert ".range-channel-track" in css
     assert "renderVolatilityRegimes" in js
     assert "isDispatchingChat" in js
+
+
+def test_kyle_lambda_slippage_math():
+    import math
+
+    def kyle_lambda(order_size, adv, daily_vol, gamma=0.5):
+        assert order_size > 0
+        assert adv > 0
+        assert daily_vol > 0
+        ratio = order_size / adv
+        return gamma * daily_vol * math.sqrt(ratio) * 10000.0  # in basis points
+
+    # Invariant 1: Larger order yields strictly higher slippage
+    s_small = kyle_lambda(10_000, 1_000_000_000, 0.05)
+    s_large = kyle_lambda(1_000_000, 1_000_000_000, 0.05)
+    assert s_large > s_small
+    assert s_small > 0.0
+
+    # Invariant 2: Higher ADV yields strictly lower slippage
+    s_deep_liquidity = kyle_lambda(1_000_000, 10_000_000_000, 0.05)
+    assert s_deep_liquidity < s_large
+
+
+def test_institutional_suite_contracts():
+    bundle_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bundle"))
+    index_path = os.path.join(bundle_dir, "index.html")
+    style_path = os.path.join(bundle_dir, "style.css")
+    app_path = os.path.join(bundle_dir, "app.js")
+
+    with open(index_path, "r", encoding="utf-8") as f:
+        html = f.read()
+    with open(style_path, "r", encoding="utf-8") as f:
+        css = f.read()
+    with open(app_path, "r", encoding="utf-8") as f:
+        js = f.read()
+
+    # Red test assertions for institutional components
+    assert "id=\"shortcuts-modal\"" in html
+    assert "id=\"inspector-chart-container\"" in html
+    assert "id=\"factor-radar-container\"" in html
+    assert "id=\"slippage-depth-matrix\"" in html
+    assert ".chart-stage" in css
+    assert ".radar-stage" in css
+    assert ".slippage-table" in css
+    assert "renderInteractiveChart" in js
+    assert "renderFactorRadar" in js
+    assert "renderSlippageMatrix" in js
+    assert "initKeyboardEngine" in js
+    assert "initWorkspacePersistence" in js
+
 
 

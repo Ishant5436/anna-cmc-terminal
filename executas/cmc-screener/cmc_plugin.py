@@ -108,17 +108,22 @@ class CMCDataSource:
                     for item in data:
                         quote = item.get("quote", {}).get("USD", {})
                         price = float(quote.get("price") or 0.0)
+                        pct_24h = float(quote.get("percent_change_24h") or 0.0)
+                        pct_7d = float(quote.get("percent_change_7d") or 0.0)
+                        span = max(0.012, abs(pct_24h) * 0.006 + abs(pct_7d) * 0.002)
+                        up_pad = max(span, (pct_24h / 100.0) if pct_24h > 0 else 0.0) + 0.005
+                        down_pad = max(span, (-pct_24h / 100.0) if pct_24h < 0 else 0.0) + 0.005
                         parsed.append({
                             "id": item.get("id"),
                             "name": str(item.get("name") or ""),
                             "symbol": str(item.get("symbol") or "").upper(),
                             "price_usd": price,
-                            "percent_change_24h": float(quote.get("percent_change_24h") or 0.0),
-                            "percent_change_7d": float(quote.get("percent_change_7d") or 0.0),
+                            "percent_change_24h": pct_24h,
+                            "percent_change_7d": pct_7d,
                             "volume_24h_usd": float(quote.get("volume_24h") or 0.0),
                             "market_cap_usd": float(quote.get("market_cap") or 0.0),
-                            "high_24h_usd": price * 1.025,
-                            "low_24h_usd": price * 0.975,
+                            "high_24h_usd": price * (1.0 + up_pad),
+                            "low_24h_usd": price * max(0.001, (1.0 - down_pad)),
                             "circulating_supply": float(item.get("circulating_supply") or 0.0),
                         })
                     self.last_source = "live_api"

@@ -403,9 +403,23 @@
             </div>
           </div>
 
-          <!-- Volatility Grid -->
-          <div class="volatility-cards-grid" id="volatility-cards">
-            <!-- Dynamically populated by app.js -->
+          <!-- Volatility Table Component -->
+          <div class="table-card-wrapper">
+            <table class="quant-table font-mono" id="volatility-table">
+              <thead>
+                <tr>
+                  <th style="width: 160px;">Asset</th>
+                  <th class="th-num" style="width: 110px;">Spot Price</th>
+                  <th style="width: 250px;">24h Price Channel (Low – High)</th>
+                  <th class="th-num" style="width: 140px;">Parkinson &sigma;</th>
+                  <th style="width: 150px;">Regime</th>
+                  <th>Execution Advisory</th>
+                </tr>
+              </thead>
+              <tbody id="volatility-tbody">
+                <!-- Dynamically populated by app.js -->
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

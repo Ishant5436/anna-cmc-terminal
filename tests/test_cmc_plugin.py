@@ -194,3 +194,25 @@ def test_manifest_version_109():
     desc = handle_describe({})
     assert desc["version"] == "1.0.9"
 
+
+def test_bundle_volatility_table_contract():
+    bundle_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bundle"))
+    index_path = os.path.join(bundle_dir, "index.html")
+    style_path = os.path.join(bundle_dir, "style.css")
+    app_path = os.path.join(bundle_dir, "app.js")
+
+    with open(index_path, "r", encoding="utf-8") as f:
+        html = f.read()
+    with open(style_path, "r", encoding="utf-8") as f:
+        css = f.read()
+    with open(app_path, "r", encoding="utf-8") as f:
+        js = f.read()
+
+    # Red test assertions: will pass once Tasks 1-4 are completed
+    assert "id=\"volatility-table\"" in html
+    assert "id=\"volatility-tbody\"" in html
+    assert ".range-channel-track" in css
+    assert "renderVolatilityRegimes" in js
+    assert "isDispatchingChat" in js
+
+

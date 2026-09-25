@@ -751,30 +751,54 @@ function initAnnaChatIntegration() {
     alert("Copied formatted alpha digest to clipboard (ready to paste in Anna Chat)!");
   });
 
-  // Ask Anna about Selected Asset
+  // Ask Anna about Selected Asset (Debounced to prevent RPC spam)
+  let isDispatchingChat = false;
   document.getElementById("btn-ask-anna-selected")?.addEventListener("click", async () => {
-    if (!selectedAsset) return;
+    if (!selectedAsset || isDispatchingChat) return;
+    isDispatchingChat = true;
+    const btn = document.getElementById("btn-ask-anna-selected");
+    if (btn) btn.disabled = true;
+
     const prompt = `Please explain why **${selectedAsset.symbol}** (${selectedAsset.name}) ranks **#${selectedAsset.rank}** with an Alpha Score of **${selectedAsset.momentum_score}/10.0**.\n\nContext:\n- Spot Price: ${formatCurrency(selectedAsset.price_usd)}\n- 24h Return: ${selectedAsset.percent_change_24h}%\n- 7d Return: ${selectedAsset.percent_change_7d}%\n- 24h Volume: ${formatCurrency(selectedAsset.volume_24h_usd)}\n- Parkinson Volatility: ${selectedAsset.parkinson_vol ? (selectedAsset.parkinson_vol * 100).toFixed(2) + '%' : 'N/A'} (${selectedAsset.regime || 'TRENDING'})\n- Turnover Ratio: ${selectedAsset.turnover_tier || 'DEEP_LIQUIDITY'}\n\nWhat are the primary drivers and risks for this asset over the next 48 hours?`;
 
-    if (anna && anna.chat && typeof anna.chat.write_message === "function") {
-      try {
+    try {
+      if (anna && anna.chat && typeof anna.chat.write_message === "function") {
         await anna.chat.write_message({ message: prompt });
         alert(`Analysis prompt for ${selectedAsset.symbol} sent to Anna Chat!`);
-        return;
-      } catch (err) {
-        console.warn("Host chat dispatch skipped:", err);
+      } else {
+        navigator.clipboard.writeText(prompt);
+        alert(`Copied deep-dive prompt for ${selectedAsset.symbol} to clipboard!`);
       }
+    } catch (err) {
+      console.warn("Host chat dispatch skipped:", err);
+      navigator.clipboard.writeText(prompt);
+      alert(`Copied deep-dive prompt for ${selectedAsset.symbol} to clipboard!`);
+    } finally {
+      setTimeout(() => {
+        isDispatchingChat = false;
+        if (btn) btn.disabled = false;
+      }, 1500);
     }
-    navigator.clipboard.writeText(prompt);
-    alert(`Copied deep-dive prompt for ${selectedAsset.symbol} to clipboard!`);
   });
 }
 
-// Volatility Regimes (Tab 2)
+function getAdvisoryByRegime(regimeClass) {
+  if (regimeClass === "compression") return "Consolidation · Breakout Watch";
+  if (regimeClass === "trending") return "Directional Equilibrium · Trend Safe";
+  return "High Tail-Risk · Widen Stops / TWAP";
+}
+
+function resolveAssetName(sym) {
+  if (STANDALONE_FIXTURES.quotes[sym]?.name) return STANDALONE_FIXTURES.quotes[sym].name;
+  const match = STANDALONE_FIXTURES.momentum.find(m => m.symbol === sym);
+  return match?.name || sym;
+}
+
+// Volatility Regimes (Tab 2 - Institutional Quant Table)
 async function renderVolatilityRegimes() {
-  const container = document.getElementById("volatility-cards");
+  const tbody = document.getElementById("volatility-tbody");
   const spinner = document.getElementById("volatility-spinner");
-  if (!container) return;
+  if (!tbody) return;
 
   if (spinner) spinner.classList.remove("hidden");
   const raw = await callScreener("volatility", { symbol: "ALL" });
@@ -782,40 +806,64 @@ async function renderVolatilityRegimes() {
   const items = normalizeArray(raw);
 
   if (items.length === 0) {
-    container.innerHTML = `<div style="color: var(--quant-red); text-align: center; padding: 20px;">Failed to compute volatility regimes.</div>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="color: var(--quant-red); text-align: center; padding: 20px;">Failed to compute volatility regimes.</td></tr>`;
     return;
   }
 
-  container.innerHTML = items.map(item => {
+  tbody.innerHTML = items.map(item => {
     const sym = item.symbol ?? "BTC";
+    const name = resolveAssetName(sym);
     const rawRegime = item.regime ?? "COMPRESSION";
     const regime = String(rawRegime).toLowerCase();
     const regimeClass = regime.includes("compression") ? "compression" : regime.includes("trending") ? "trending" : "expansion";
     const volNum = item.parkinson_volatility ?? item.parkinson_vol ?? 0.02;
     const volPct = (volNum * 100).toFixed(2);
+    const volBarWidth = Math.min(100, Math.max(8, (volNum / 0.08) * 100));
     const price = item.price_usd ?? 0;
-    const high = item.high_24h_usd ?? item.high_24h ?? price;
-    const low = item.low_24h_usd ?? item.low_24h ?? price;
+    const high = item.high_24h_usd ?? item.high_24h ?? (price > 0 ? price * 1.02 : 1);
+    const low = item.low_24h_usd ?? item.low_24h ?? (price > 0 ? price * 0.98 : 0);
+    const span = Math.max(high - low, 0.0001);
+    const rawChannelPct = ((price - low) / span) * 100;
+    const channelPct = Math.max(2, Math.min(98, rawChannelPct));
+    const advisory = getAdvisoryByRegime(regimeClass);
 
     return `
-      <div class="vol-asset-card font-mono">
-        <div class="vol-card-top">
-          <span class="vol-symbol">${sym}</span>
+      <tr>
+        <td>
+          <div class="asset-cell">
+            <div class="asset-icon-box">${sym.slice(0, 3)}</div>
+            <div class="asset-text-group">
+              <span class="asset-symbol">${sym}</span>
+              <span class="asset-name">${name}</span>
+            </div>
+          </div>
+        </td>
+        <td class="col-num">${formatCurrency(price)}</td>
+        <td>
+          <div class="range-channel-wrap font-mono">
+            <span class="range-extreme-val left">${formatCurrency(low)}</span>
+            <div class="range-channel-track" title="Spot: ${formatCurrency(price)} (${channelPct.toFixed(0)}% of 24h channel)">
+              <div class="range-channel-fill" style="width: ${channelPct}%;"></div>
+              <div class="range-channel-thumb ${regimeClass}" style="left: ${channelPct}%;"></div>
+            </div>
+            <span class="range-extreme-val right">${formatCurrency(high)}</span>
+          </div>
+        </td>
+        <td class="col-num">
+          <div class="vol-sigma-cell font-mono">
+            <span class="vol-sigma-val" style="color: var(--quant-blue);">${volPct}%</span>
+            <div class="vol-sigma-bar">
+              <div class="vol-sigma-fill ${regimeClass}" style="width: ${volBarWidth}%;"></div>
+            </div>
+          </div>
+        </td>
+        <td>
           <span class="regime-pill ${regimeClass}">${String(rawRegime).replace('_', ' ')}</span>
-        </div>
-        <div class="vol-metrics-row">
-          <span>SPOT PRICE:</span>
-          <span class="vol-val">${formatCurrency(price)}</span>
-        </div>
-        <div class="vol-metrics-row">
-          <span>24H RANGE:</span>
-          <span>${formatCurrency(low)} – ${formatCurrency(high)}</span>
-        </div>
-        <div class="vol-metrics-row">
-          <span>PARKINSON σ:</span>
-          <span class="vol-val" style="color: var(--quant-blue);">${volPct}%</span>
-        </div>
-      </div>
+        </td>
+        <td>
+          <span class="vol-advisory-text">${advisory}</span>
+        </td>
+      </tr>
     `;
   }).join("");
 }

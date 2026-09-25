@@ -1669,6 +1669,114 @@ body.density-compact .filter-strip {
 .trending-dot { background: var(--quant-green); }
 .expansion-dot { background: var(--quant-red); }
 
+/* ==========================================================================
+   Volatility Table & Range Channel Components
+   ========================================================================== */
+
+.range-channel-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.range-extreme-val {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  min-width: 52px;
+}
+
+.range-extreme-val.left {
+  text-align: left;
+}
+
+.range-extreme-val.right {
+  text-align: right;
+}
+
+.range-channel-track {
+  position: relative;
+  flex: 1;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: visible;
+}
+
+.range-channel-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.6));
+  border-radius: 999px;
+}
+
+.range-channel-thumb {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+  border: 1.5px solid #0a0e17;
+  z-index: 2;
+}
+
+.range-channel-thumb.compression {
+  background: var(--quant-blue);
+  box-shadow: 0 0 6px var(--quant-blue);
+}
+
+.range-channel-thumb.trending {
+  background: var(--quant-green);
+  box-shadow: 0 0 6px var(--quant-green);
+}
+
+.range-channel-thumb.expansion {
+  background: var(--quant-red);
+  box-shadow: 0 0 6px var(--quant-red);
+}
+
+.vol-sigma-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.vol-sigma-val {
+  font-weight: 600;
+  min-width: 48px;
+  text-align: right;
+}
+
+.vol-sigma-bar {
+  width: 45px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.vol-sigma-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--quant-blue);
+}
+
+.vol-sigma-fill.compression { background: var(--quant-blue); }
+.vol-sigma-fill.trending { background: var(--quant-green); }
+.vol-sigma-fill.expansion { background: var(--quant-red); }
+
+.vol-advisory-text {
+  font-size: 11px;
+  color: #c9cdd4;
+}
+
 .volatility-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

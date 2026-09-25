@@ -26,75 +26,59 @@
         </div>
       </div>
 
-      <!-- Segmented Control Navigation (shadcn Tabs Pattern) -->
-      <nav class="nav-segment-bar" aria-label="Terminal views">
+      <!-- Segmented Control Navigation (High-Density Terminal Monospace) -->
+      <nav class="nav-segment-bar font-mono" aria-label="Terminal views">
         <button class="nav-tab active" data-tab="tab-momentum">
-          <kbd class="kbd-badge">1</kbd>
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-          <span>Momentum</span>
+          <span class="tab-num">1</span>
+          <span class="tab-name">MOMENTUM</span>
         </button>
         <button class="nav-tab" data-tab="tab-volatility">
-          <kbd class="kbd-badge">2</kbd>
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-          <span>Volatility</span>
+          <span class="tab-num">2</span>
+          <span class="tab-name">VOLATILITY</span>
         </button>
         <button class="nav-tab" data-tab="tab-liquidity">
-          <kbd class="kbd-badge">3</kbd>
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          <span>Liquidity</span>
+          <span class="tab-num">3</span>
+          <span class="tab-name">LIQUIDITY</span>
         </button>
         <button class="nav-tab" data-tab="tab-inspector">
-          <kbd class="kbd-badge">4</kbd>
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span>Diagnostic</span>
+          <span class="tab-num">4</span>
+          <span class="tab-name">DIAGNOSTIC</span>
         </button>
         <button class="nav-tab" data-tab="tab-correlation">
-          <kbd class="kbd-badge">5</kbd>
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-          <span>Correlation</span>
+          <span class="tab-num">5</span>
+          <span class="tab-name">CORRELATION</span>
         </button>
         <button class="nav-tab" data-tab="tab-risk-parity">
-          <kbd class="kbd-badge">6</kbd>
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          <span>Risk Parity &amp; Carry</span>
+          <span class="tab-num">6</span>
+          <span class="tab-name">RISK PARITY</span>
         </button>
         <button class="nav-tab" data-tab="tab-pairs">
-          <kbd class="kbd-badge">7</kbd>
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
-          <span>Statistical Arbitrage</span>
+          <span class="tab-num">7</span>
+          <span class="tab-name">STAT-ARB</span>
         </button>
       </nav>
 
-      <!-- Toolbar Right: Density Toggle & Differentiated Connection Beacon -->
-      <div class="header-status-group">
-        <button class="density-toggle-btn font-mono" id="btn-open-cmd" title="Bloomberg Command Palette (Space or Cmd+K)">
-          <kbd class="kbd-badge">&gt;</kbd>
-          <span>CMD</span>
+      <!-- Toolbar Right: Dense Terminal Action Strip -->
+      <div class="header-status-group font-mono">
+        <button class="terminal-tool-btn" id="btn-open-cmd" title="Bloomberg Command Palette (Space or Cmd+K)">
+          <span>&gt; CMD</span>
         </button>
 
-        <button class="density-toggle-btn font-mono" id="btn-open-settings" title="Settings & API Key (,)">
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>Config</span>
+        <button class="terminal-tool-btn" id="btn-open-settings" title="Settings & API Key (,)">
+          <span>CONFIG</span>
         </button>
 
-        <button class="density-toggle-btn font-mono" id="btn-open-shortcuts" title="Bloomberg Hotkeys (?)">
-          <kbd class="kbd-badge">?</kbd>
-          <span>Keys</span>
+        <button class="terminal-tool-btn" id="btn-open-shortcuts" title="Hotkeys Cheatsheet (?)">
+          <span>KEYS</span>
         </button>
 
-        <button class="density-toggle-btn font-mono" id="btn-toggle-density" title="Toggle table row density (Compact / Comfortable)">
-          <svg class="density-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          <span id="density-label">Compact</span>
+        <button class="terminal-tool-btn" id="btn-toggle-density" title="Toggle table row density (Compact / Comfortable)">
+          <span id="density-label">COMPACT</span>
         </button>
 
-        <div class="feed-indicator-pill" title="Live Institutional Market Feed">
-          <span class="feed-dot"></span>
-          <span class="feed-name">CMC Enterprise Feed</span>
-        </div>
-
-        <div class="status-indicator-pill clickable" id="host-status" title="Click to view connection telemetry & latency">
-          <span class="status-beacon live"></span>
-          <span class="status-text font-mono" id="host-label">Live · 42ms</span>
+        <div class="terminal-status-tag" id="host-status" title="Connection Latency & Engine State">
+          <span class="status-marker">●</span>
+          <span id="host-label">LIVE 42ms</span>
         </div>
       </div>
     </header>
@@ -145,16 +129,12 @@
         <div class="panel-glass-surface">
           <!-- Master Headline & Action Controls -->
           <div class="panel-headline-row">
-            <div>
-              <h2 class="panel-heading">Cross-Sectional Momentum Rankings</h2>
-              <p class="panel-subheading">Institutional multi-factor relative strength combining standardized returns, volume velocity, and market capitalization.</p>
-            </div>
+            <h2 class="panel-heading font-mono">CROSS-SECTIONAL MOMENTUM SCREENER</h2>
             <div class="controls-group">
               <span class="last-updated-text font-mono" id="momentum-last-updated">Updated: 14:32:07 UTC</span>
               <button class="action-btn-primary" id="btn-apply-filters">
                 <span class="btn-spinner hidden" id="momentum-spinner"></span>
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                <span id="apply-btn-label">Apply Filters</span>
+                <span id="apply-btn-label">APPLY FILTERS</span>
               </button>
             </div>
           </div>
@@ -407,42 +387,18 @@
       <section class="terminal-panel" id="tab-volatility">
         <div class="panel-glass-surface">
           <div class="panel-headline-row">
-            <div>
-              <h2 class="panel-heading">Parkinson Realized Volatility Regimes</h2>
-              <p class="panel-subheading">Intraday high/low extreme-value volatility estimation classifying market states into Compression, Trending, or Expansion.</p>
-            </div>
+            <h2 class="panel-heading font-mono">PARKINSON REALIZED VOLATILITY REGIMES</h2>
             <button class="action-btn-primary" id="btn-refresh-volatility">
               <span class="btn-spinner hidden" id="volatility-spinner"></span>
-              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-              <span>Recalculate</span>
+              <span>RECALCULATE</span>
             </button>
           </div>
 
-          <!-- Regime Definition Cards -->
-          <div class="regime-definitions-grid">
-            <div class="regime-explainer-card">
-              <div class="regime-card-title">
-                <span class="dot compression-dot"></span>
-                <span>Compression (&sigma; &lt; 2.5%)</span>
-              </div>
-              <p class="regime-card-desc">Narrow consolidation band. Energy accumulation ahead of potential high-conviction breakout.</p>
-            </div>
-
-            <div class="regime-explainer-card">
-              <div class="regime-card-title">
-                <span class="dot trending-dot"></span>
-                <span>Trending (&sigma; 2.5% &ndash; 6.0%)</span>
-              </div>
-              <p class="regime-card-desc">Directional equilibrium. Healthy momentum with minimal liquidity whip or tail-risk spread.</p>
-            </div>
-
-            <div class="regime-explainer-card">
-              <div class="regime-card-title">
-                <span class="dot expansion-dot"></span>
-                <span>Expansion (&sigma; &gt; 6.0%)</span>
-              </div>
-              <p class="regime-card-desc">Elevated volatility risk warning. Intraday spread drag requires tight trailing stops.</p>
-            </div>
+          <!-- Compact Regime Key -->
+          <div class="regime-key-bar font-mono">
+            <span class="regime-key-item"><span class="dot compression-dot"></span> Compression &lt;2.5%</span>
+            <span class="regime-key-item"><span class="dot trending-dot"></span> Trending 2.5–6.0%</span>
+            <span class="regime-key-item"><span class="dot expansion-dot"></span> Expansion &gt;6.0%</span>
           </div>
 
           <!-- Volatility Table Component -->
@@ -470,14 +426,10 @@
       <section class="terminal-panel" id="tab-liquidity">
         <div class="panel-glass-surface">
           <div class="panel-headline-row">
-            <div>
-              <h2 class="panel-heading">Turnover Velocity & Slippage Depth</h2>
-              <p class="panel-subheading">24H volume-to-market-cap ratio measuring liquidity velocity and execution slippage risk.</p>
-            </div>
+            <h2 class="panel-heading font-mono">TURNOVER VELOCITY & SLIPPAGE DEPTH</h2>
             <button class="action-btn-primary" id="btn-refresh-liquidity">
               <span class="btn-spinner hidden" id="liquidity-spinner"></span>
-              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-              <span>Refresh</span>
+              <span>REFRESH</span>
             </button>
           </div>
 
@@ -507,8 +459,7 @@
         <div class="panel-glass-surface">
           <div class="panel-headline-row">
             <div>
-              <h2 class="panel-heading">Institutional Quantitative Asset Diagnostic</h2>
-              <p class="panel-subheading">High-resolution interactive charting, Kyle's Lambda slippage depth, 5-axis factor radar, and risk metrics.</p>
+              <h2 class="panel-heading font-mono">INSTITUTIONAL QUANTITATIVE ASSET DIAGNOSTIC</h2>
             </div>
             <div class="asset-search-wrap">
               <div class="search-input-group">
@@ -564,8 +515,7 @@
         <div class="panel-glass-surface">
           <div class="panel-headline-row">
             <div>
-              <h2 class="panel-heading">Cross-Sectional Correlation &amp; Beta Matrix</h2>
-              <p class="panel-subheading">Rolling 30-day pairwise Pearson correlation coefficients (r) and BTC benchmark beta metrics.</p>
+              <h2 class="panel-heading font-mono">CROSS-SECTIONAL CORRELATION & BETA MATRIX</h2>
             </div>
             <div class="header-action-group">
               <span class="compliance-tag font-mono">Regimes: High Co-movement (&ge;0.70) &bull; Orthogonal (-0.30 to 0.30) &bull; Inverse (&le;-0.30)</span>
@@ -582,14 +532,10 @@
       <section class="terminal-panel" id="tab-risk-parity">
         <div class="panel-glass-surface">
           <div class="panel-headline-row">
-            <div>
-              <h2 class="panel-heading">Portfolio Risk Parity &amp; Perpetual Carry Scanner</h2>
-              <p class="panel-subheading">Equal Risk Contribution (ERC) allocation matrix, cross-sectional funding rate carry scanner, and autonomous Anna briefing dispatcher.</p>
-            </div>
+            <h2 class="panel-heading font-mono">PORTFOLIO RISK PARITY & PERPETUAL CARRY SCANNER</h2>
             <div class="header-action-group">
               <button class="action-btn-primary" id="btn-refresh-risk-parity">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                <span>Recalculate All</span>
+                <span>RECALCULATE ALL</span>
               </button>
             </div>
           </div>
@@ -627,7 +573,7 @@
                   <span class="font-mono font-bold">AUTONOMOUS ANNA OS DISPATCH</span>
                   <span class="status-dot-sm live"></span>
                 </div>
-                <p class="dispatch-card-desc">Push synthesized market-neutral long/short rankings, volatility regimes, and risk-parity rebalances directly into the Anna AI OS session.</p>
+                <p class="dispatch-card-desc">Emits long/short rankings, volatility regimes, and risk-parity rebalances to the active Anna session.</p>
                 <div class="dispatch-action-row">
                   <button class="action-btn-primary dispatch-btn" id="btn-dispatch-anna">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -646,8 +592,7 @@
         <div class="panel-glass-surface">
           <div class="panel-headline-row">
             <div>
-              <h2 class="panel-heading">Statistical Arbitrage &amp; Cointegration Pairs</h2>
-              <p class="panel-subheading">Market-neutral mean reversion engine computing OLS hedge ratio &beta;, spread Z-score, and Ornstein-Uhlenbeck half-life.</p>
+              <h2 class="panel-heading font-mono">STATISTICAL ARBITRAGE &amp; COINTEGRATION PAIRS</h2>
             </div>
             <div class="header-action-group">
               <div class="benchmark-overlay-group">
@@ -719,14 +664,14 @@
         <span class="bullet">&bull;</span>
         <span class="footer-text font-mono">Model: Parkinson Range Volatility &middot; Cross-Sectional Alpha</span>
         <span class="bullet">&bull;</span>
-        <span class="footer-text font-mono">Status: Verified Deterministic</span>
+        <span class="footer-text font-mono" id="footer-feed-mode">Feed: Connecting</span>
         <span class="bullet">&bull;</span>
         <button class="footer-dispatch-btn font-mono" id="btn-footer-dispatch" title="Dispatch Brief to Anna"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Brief Anna</button>
       </div>
       <div class="footer-right">
         <span class="footer-telemetry font-mono">
           <span class="status-dot-sm live"></span>
-          <span>Executa v1.0.16 &middot; Invariants 100% Pass</span>
+          <span id="footer-telemetry-text">Executa v1.0.16</span>
         </span>
       </div>
     </footer>

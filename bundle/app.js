@@ -144,20 +144,57 @@ let sortDir = "asc";
 let quantWeights = { w24: 0.30, w7d: 0.50, wVol: 0.20 };
 let currentDensity = "comfortable";
 
+// Real (measured) connection telemetry, replaces hardcoded placeholder values.
+// mode: "connecting" | "live" | "mock" | "error"
+let rpcTelemetry = { mode: "connecting", lastLatencyMs: null, lastSuccessAt: null };
+
+function updateConnectionTelemetry() {
+  const { mode, lastLatencyMs, lastSuccessAt } = rpcTelemetry;
+  const hostLabel = document.getElementById("host-label");
+  const diagStatus = document.getElementById("diag-status");
+  const diagLatency = document.getElementById("diag-latency");
+  const diagEndpoint = document.getElementById("diag-endpoint");
+  const diagHeartbeat = document.getElementById("diag-heartbeat");
+  const footerFeedMode = document.getElementById("footer-feed-mode");
+  const footerTelemetry = document.getElementById("footer-telemetry-text");
+
+  const latencyText = lastLatencyMs != null ? (lastLatencyMs + "ms") : "n/a";
+  const heartbeatText = lastSuccessAt != null ? (Math.max(0, Math.round((Date.now() - lastSuccessAt) / 1000)) + "s ago") : "never";
+  const endpointText = anna ? "Anna App Runtime (connected)" : "No host runtime (standalone)";
+
+  const labels = {
+    connecting: { host: "Connecting...", status: "Connecting...", feed: "Feed: Connecting...", footer: "Executa v1.0.16, connecting..." },
+    live: { host: "Live, " + latencyText, status: "Connected, healthy (" + latencyText + ")", feed: "Feed: Live (Anna Host)", footer: "Executa v1.0.16, " + latencyText + " RTT" },
+    mock: { host: "Standalone, fixtures", status: "No host runtime, serving local fixtures", feed: "Feed: Local Fixtures (Offline)", footer: "Executa v1.0.16, standalone mode" },
+    error: { host: "Degraded, retrying", status: "Last call failed, falling back to fixtures", feed: "Feed: Degraded (Fixtures)", footer: "Executa v1.0.16, degraded" },
+  };
+  const l = labels[mode] || labels.connecting;
+
+  if (hostLabel) hostLabel.textContent = l.host;
+  if (diagStatus) diagStatus.textContent = l.status;
+  if (diagLatency) diagLatency.textContent = latencyText;
+  if (diagEndpoint) diagEndpoint.textContent = endpointText;
+  if (diagHeartbeat) diagHeartbeat.textContent = heartbeatText;
+  if (footerFeedMode) footerFeedMode.textContent = l.feed;
+  if (footerTelemetry) footerTelemetry.textContent = l.footer;
+}
+
 // Connect to Anna App Runtime if inside host iframe
-(async function initRuntime() {
+const runtimeReady = (async function initRuntime() {
+  updateConnectionTelemetry();
   try {
     const sdkModule = await import("/static/anna-apps/_sdk/latest/index.js");
     if (sdkModule && sdkModule.AnnaAppRuntime) {
       anna = await sdkModule.AnnaAppRuntime.connect({ appId: "cmc-alpha-terminal" });
-      const hostLabel = document.getElementById("host-label");
-      if (hostLabel) hostLabel.textContent = "Live · 42ms";
+      rpcTelemetry.mode = "mock"; // becomes "live" once the first real RPC round-trip succeeds
       console.log("Connected to Anna App Runtime");
+    } else {
+      rpcTelemetry.mode = "mock";
     }
   } catch (_e) {
-    const hostLabel = document.getElementById("host-label");
-    if (hostLabel) hostLabel.textContent = "Live (Mock) · 42ms";
+    rpcTelemetry.mode = "mock";
   }
+  updateConnectionTelemetry();
 })();
 
 // Helper to extract payload whether unwrapped by host or enclosed in envelope
@@ -192,6 +229,7 @@ function normalizeArray(data) {
 
 async function callScreener(action, extraArgs = {}) {
   if (anna && anna.tools && typeof anna.tools.invoke === "function") {
+    const startedAt = performance.now();
     try {
       const activeToolId = getToolId();
       const res = await anna.tools.invoke({
@@ -201,10 +239,16 @@ async function callScreener(action, extraArgs = {}) {
       });
       const data = extractPayload(res);
       if (data && (Array.isArray(data) || typeof data === "object")) {
+        rpcTelemetry.mode = "live";
+        rpcTelemetry.lastLatencyMs = Math.round(performance.now() - startedAt);
+        rpcTelemetry.lastSuccessAt = Date.now();
+        updateConnectionTelemetry();
         return data;
       }
     } catch (err) {
       console.warn("Anna tool dispatch error, using local simulation:", err);
+      rpcTelemetry.mode = "error";
+      updateConnectionTelemetry();
     }
   }
 
@@ -725,17 +769,21 @@ function initConnectionPopover() {
 
   statusPill.addEventListener("click", () => {
     popover.classList.toggle("hidden");
+    updateConnectionTelemetry();
   });
 
   closeBtn?.addEventListener("click", () => popover.classList.add("hidden"));
 
-  reconnectBtn?.addEventListener("click", () => {
+  reconnectBtn?.addEventListener("click", async () => {
     const statusText = document.getElementById("diag-status");
-    if (statusText) statusText.textContent = "Re-authenticating transport...";
-    setTimeout(() => {
-      if (statusText) statusText.textContent = "Connected · Healthy (42ms)";
-      popover.classList.add("hidden");
-    }, 600);
+    if (statusText) statusText.textContent = "Probing host connection...";
+    reconnectBtn.disabled = true;
+    try {
+      await callScreener("momentum", { top_n: 1 });
+    } finally {
+      reconnectBtn.disabled = false;
+      updateConnectionTelemetry();
+    }
   });
 }
 
@@ -2309,13 +2357,18 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Load Initial Dataset
-  renderMomentumScreen();
-  renderVolatilityRegimes();
-  renderLiquidityDepth();
-  renderAssetInspector();
-  renderCorrelationHeatmap();
-  renderRiskAndCarryScreen();
+  // Load Initial Dataset. Give the host runtime connection a bounded window to
+  // settle first, so the first screen doesn't spuriously fall back to fixtures
+  // while a live host connection is still resolving.
+  const runtimeTimeout = new Promise(resolve => setTimeout(resolve, 800));
+  Promise.race([runtimeReady, runtimeTimeout]).then(() => {
+    renderMomentumScreen();
+    renderVolatilityRegimes();
+    renderLiquidityDepth();
+    renderAssetInspector();
+    renderCorrelationHeatmap();
+    renderRiskAndCarryScreen();
+  });
   renderPairsScreen();
 });
 

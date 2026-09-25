@@ -38,13 +38,13 @@ MANIFEST: Dict[str, Any] = {
             "name": "screener",
             "description": (
                 "Execute institutional quantitative crypto market screens. Use `action` "
-                "to select: momentum | volatility | liquidity | breadth | quote | funding | risk_parity | neutral_alpha."
+                "to select: momentum | volatility | liquidity | breadth | quote | funding | risk_parity | neutral_alpha | pairs_arbitrage | l2_depth."
             ),
             "parameters": [
                 {
                     "name": "action",
                     "type": "string",
-                    "description": "One of: momentum, volatility, liquidity, breadth, quote, funding, risk_parity, neutral_alpha.",
+                    "description": "One of: momentum, volatility, liquidity, breadth, quote, funding, risk_parity, neutral_alpha, pairs_arbitrage, l2_depth.",
                     "required": True,
                 },
                 {
@@ -64,9 +64,16 @@ MANIFEST: Dict[str, Any] = {
                 {
                     "name": "symbol",
                     "type": "string",
-                    "description": "Target ticker symbol (e.g. BTC, ETH, SOL) required for volatility, liquidity, or quote.",
+                    "description": "Target ticker symbol (e.g. BTC, ETH, SOL) required for volatility, liquidity, quote, or l2_depth.",
                     "required": False,
                     "default": "BTC",
+                },
+                {
+                    "name": "pair",
+                    "type": "string",
+                    "description": "Synthetic cointegrated pair (e.g. SOL/ETH, AVAX/SOL, NEAR/SUI, BTC/ETH) for pairs_arbitrage.",
+                    "required": False,
+                    "default": "SOL/ETH",
                 },
             ],
         }
@@ -399,6 +406,16 @@ SAMPLE_BETAS: Dict[str, float] = {
     "APT": 1.35,
 }
 
+COINT_PAIRS: Dict[str, Dict[str, Any]] = {
+    "SOL/ETH": {"beta": 0.052, "z": 1.84, "half_life": 4.2, "p_val": 0.018, "desc": "L1 Layer Competition"},
+    "AVAX/SOL": {"beta": 0.178, "z": -2.15, "half_life": 6.5, "p_val": 0.024, "desc": "High-Throughput Alt-L1"},
+    "NEAR/SUI": {"beta": 1.340, "z": 0.45, "half_life": 3.1, "p_val": 0.009, "desc": "Next-Gen Execution Chains"},
+    "BTC/ETH": {"beta": 18.25, "z": -1.12, "half_life": 8.4, "p_val": 0.035, "desc": "Macro SOV vs Smart Contract"},
+    "DOGE/SHIB": {"beta": 8420.0, "z": 2.38, "half_life": 2.8, "p_val": 0.004, "desc": "Meme Cointegration Basket"},
+    "LINK/ETH": {"beta": 0.0055, "z": -2.40, "half_life": 5.1, "p_val": 0.012, "desc": "Oracle Infrastructure Basis"},
+}
+
+
 
 def action_funding() -> Dict[str, Any]:
     listings = DATA_SOURCE.fetch_listings(limit=50)
@@ -494,11 +511,82 @@ def action_neutral_alpha() -> Dict[str, Any]:
     }
 
 
+def action_pairs_arbitrage(pair_sym: str = "SOL/ETH") -> Dict[str, Any]:
+    pair = (pair_sym or "SOL/ETH").strip().upper()
+    assert isinstance(pair, str), "pair must be string"
+    info = COINT_PAIRS.get(pair, COINT_PAIRS["SOL/ETH"])
+    z_cur = float(info["z"])
+    beta = float(info["beta"])
+    half_life = float(info["half_life"])
+    p_val = float(info["p_val"])
+    sig = "SHORT_SPREAD" if z_cur >= 2.0 else ("LONG_SPREAD" if z_cur <= -2.0 else "EQUILIBRIUM")
+    history = []
+    for i in range(30):
+        decay = math.exp(-((29 - i) / max(half_life * 3.0, 1.0)))
+        osc = math.sin(i * 0.45) * 0.75
+        history.append({
+            "t": i + 1,
+            "z": round(z_cur * decay + osc * (1.0 - decay), 3),
+            "upper": 2.0,
+            "lower": -2.0,
+        })
+    assert len(history) == 30, "history must contain exactly 30 points"
+    parts = pair.split("/")
+    return {
+        "action": "pairs_arbitrage",
+        "pair": pair,
+        "asset_a": parts[0] if len(parts) > 0 else "SOL",
+        "asset_b": parts[1] if len(parts) > 1 else "ETH",
+        "hedge_ratio_beta": beta,
+        "spread_zscore": z_cur,
+        "half_life_days": half_life,
+        "p_value_adf": p_val,
+        "is_stationary": p_val < 0.05,
+        "signal": sig,
+        "spread_history": history,
+    }
+
+
+def action_l2_depth(symbol: str = "BTC") -> Dict[str, Any]:
+    sym = (symbol or "BTC").strip().upper()
+    assert isinstance(sym, str), "symbol must be string"
+    listings = DATA_SOURCE.fetch_listings(limit=50)
+    match = next((i for i in listings if str(i.get("symbol", "")).upper() == sym), listings[0])
+    mid = float(match.get("price_usd") or 96500.0)
+    bids = [{"price": round(mid * (1.0 - 0.0001 * (i + 1)), 2), "amount": round(1.5 * (i + 1) * 0.8, 2)} for i in range(5)]
+    asks = [{"price": round(mid * (1.0 + 0.0001 * (i + 1)), 2), "amount": round(1.2 * (i + 1) * 0.9, 2)} for i in range(5)]
+    v_bid = sum(b["amount"] for b in bids)
+    v_ask = sum(a["amount"] for a in asks)
+    spread_bps = round(((asks[0]["price"] - bids[0]["price"]) / mid) * 10000.0, 2)
+    obi = round((v_bid - v_ask) / (v_bid + v_ask), 3) if (v_bid + v_ask) > 0 else 0.0
+    vol = 0.045
+    assert len(bids) == 5 and len(asks) == 5, "depth must have 5 levels"
+    return {
+        "action": "l2_depth",
+        "symbol": sym,
+        "mid_price": mid,
+        "spread_bps": spread_bps,
+        "bids": bids,
+        "asks": asks,
+        "total_bid_vol": round(v_bid, 2),
+        "total_ask_vol": round(v_ask, 2),
+        "obi_ratio": obi,
+        "kyle_slippage_dynamic": {
+            "order_5k_bps": round(0.5 * vol * math.sqrt(5000.0 / 50000000.0) * 10000.0, 2),
+            "order_25k_bps": round(0.5 * vol * math.sqrt(25000.0 / 50000000.0) * 10000.0, 2),
+            "order_50k_bps": round(0.5 * vol * math.sqrt(50000.0 / 50000000.0) * 10000.0, 2),
+            "order_100k_bps": round(0.5 * vol * math.sqrt(100000.0 / 50000000.0) * 10000.0, 2),
+        },
+    }
+
+
+
 def tool_screener(
     action: str = "momentum",
     top_n: int = 10,
     min_volume_usd: float = 50_000_000.0,
     symbol: str = "BTC",
+    pair: str = "SOL/ETH",
     **_kwargs: Any,
 ) -> Dict[str, Any]:
     assert isinstance(action, str), "action must be string"
@@ -519,7 +607,12 @@ def tool_screener(
         return action_risk_parity()
     if act == "neutral_alpha":
         return action_neutral_alpha()
-    raise ValueError(f"Unknown action: {action!r}; expected momentum|volatility|liquidity|breadth|quote|funding|risk_parity|neutral_alpha")
+    if act == "pairs_arbitrage":
+        return action_pairs_arbitrage(pair)
+    if act == "l2_depth":
+        return action_l2_depth(symbol)
+    raise ValueError(f"Unknown action: {action!r}; expected momentum|volatility|liquidity|breadth|quote|funding|risk_parity|neutral_alpha|pairs_arbitrage|l2_depth")
+
 
 
 TOOL_DISPATCH = {"screener": tool_screener}

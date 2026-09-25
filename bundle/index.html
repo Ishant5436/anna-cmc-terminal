@@ -21,7 +21,7 @@
         <div class="brand-meta">
           <div class="brand-title-row">
             <span class="brand-title">CMC Alpha</span>
-            <span class="hud-badge">v1.0.15</span>
+            <span class="hud-badge">v1.0.16</span>
           </div>
         </div>
       </div>
@@ -57,6 +57,11 @@
           <kbd class="kbd-badge">6</kbd>
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           <span>Risk &amp; Carry</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-pairs">
+          <kbd class="kbd-badge">7</kbd>
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+          <span>Stat-Arb</span>
         </button>
       </nav>
 
@@ -543,6 +548,7 @@
               <div class="inspector-col-left">
                 <div id="inspector-chart-container" class="chart-container"></div>
                 <div id="slippage-depth-matrix" class="slippage-matrix-container"></div>
+                <div id="l2-microstructure-container" class="l2-microstructure-stage"></div>
               </div>
               <div class="inspector-col-right">
                 <div id="factor-radar-container" class="radar-container"></div>
@@ -634,6 +640,76 @@
           </div>
         </div>
       </section>
+
+      <!-- PANEL 7: STATISTICAL ARBITRAGE & COINTEGRATION PAIRS -->
+      <section class="terminal-panel" id="tab-pairs">
+        <div class="panel-glass-surface">
+          <div class="panel-headline-row">
+            <div>
+              <h2 class="panel-heading">Statistical Arbitrage &amp; Cointegration Pairs</h2>
+              <p class="panel-subheading">Market-neutral mean reversion engine computing OLS hedge ratio &beta;, spread Z-score, and Ornstein-Uhlenbeck half-life.</p>
+            </div>
+            <div class="header-action-group">
+              <div class="benchmark-overlay-group">
+                <label for="select-coint-pair" class="benchmark-label font-mono">Pair:</label>
+                <select id="select-coint-pair" class="hud-select font-mono" title="Select Cointegrated Pair">
+                  <option value="SOL/ETH" selected>SOL/ETH (L1 Competition)</option>
+                  <option value="AVAX/SOL">AVAX/SOL (Alt-L1 Layer)</option>
+                  <option value="NEAR/SUI">NEAR/SUI (Parallel Execution)</option>
+                  <option value="BTC/ETH">BTC/ETH (Macro SOV vs Smart Contract)</option>
+                  <option value="DOGE/SHIB">DOGE/SHIB (Meme Basis)</option>
+                  <option value="LINK/ETH">LINK/ETH (Oracle Infra)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="pairs-split-grid">
+            <!-- Left: Spread Deviation Chart with Bollinger Bands -->
+            <div class="pairs-chart-card">
+              <div class="card-inner-headline">
+                <span class="font-mono font-bold" id="pairs-chart-title">SPREAD Z-SCORE &plusmn;2&sigma; EQUILIBRIUM CHANNEL</span>
+                <span class="compliance-tag font-mono" id="pairs-stationarity-tag">ADF: Stationary (p=0.018)</span>
+              </div>
+              <div class="pairs-chart-container" id="pairs-spread-chart">
+                <!-- SVG dynamically populated by renderSpreadChartSVG -->
+              </div>
+              <div class="pairs-chart-footer font-mono">
+                <div class="stat-pill"><span class="pill-k">Lookback:</span> <span class="pill-v">30 Periods</span></div>
+                <div class="stat-pill"><span class="pill-k">Confidence:</span> <span class="pill-v">95% (&plusmn;2.0&sigma;)</span></div>
+                <div class="stat-pill"><span class="pill-k">Mean Reversion:</span> <span class="pill-v" id="pairs-decay-rate">O-U Decay 0.165/period</span></div>
+              </div>
+            </div>
+
+            <!-- Right: Trade Signal & Sizing Card -->
+            <div class="pairs-telemetry-sidebar">
+              <div class="stat-arb-telemetry-card">
+                <div class="card-inner-headline">
+                  <span class="font-mono font-bold">PAIR TELEMETRY &amp; POSITION SIZING</span>
+                  <span class="badge-status-pill font-mono" id="pair-signal-badge">SHORT SPREAD</span>
+                </div>
+                <div class="pair-metrics-grid font-mono">
+                  <div class="metric-row"><span class="mk">Hedge Ratio (&beta;):</span> <span class="mv font-bold" id="pair-beta-val">0.0520</span></div>
+                  <div class="metric-row"><span class="mk">Current Spread Z:</span> <span class="mv font-bold" id="pair-zscore-val">+1.84&sigma;</span></div>
+                  <div class="metric-row"><span class="mk">Half-Life (t&frac12;):</span> <span class="mv font-bold" id="pair-halflife-val">4.2 Days</span></div>
+                  <div class="metric-row"><span class="mk">Stationary P-Val:</span> <span class="mv" id="pair-pval-val">0.018</span></div>
+                </div>
+
+                <div class="pair-sizing-box font-mono">
+                  <div class="sizing-headline">Recommended 10K Capital Allocation:</div>
+                  <div class="sizing-leg leg-a" id="pair-leg-a">Sell $5,000 SOL</div>
+                  <div class="sizing-leg leg-b" id="pair-leg-b">Buy $5,000 ETH (&times;0.0520)</div>
+                </div>
+
+                <button class="action-btn-primary dispatch-btn" id="btn-dispatch-stat-arb">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  <span>Dispatch Pair Strategy to Anna</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <!-- Terminal Footer -->
@@ -650,7 +726,7 @@
       <div class="footer-right">
         <span class="footer-telemetry font-mono">
           <span class="status-dot-sm live"></span>
-          <span>Executa v1.0.15 &middot; Invariants 100% Pass</span>
+          <span>Executa v1.0.16 &middot; Invariants 100% Pass</span>
         </span>
       </div>
     </footer>

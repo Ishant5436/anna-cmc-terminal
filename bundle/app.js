@@ -83,6 +83,57 @@ const STANDALONE_FIXTURES = {
   }
 };
 
+const COINT_PAIRS_FIXTURE = {
+  "SOL/ETH": {
+    pair: "SOL/ETH", asset_a: "SOL", asset_b: "ETH", hedge_ratio_beta: 0.052, spread_zscore: 1.84, half_life_days: 4.2, p_value_adf: 0.018, is_stationary: true, signal: "SHORT_SPREAD",
+    spread_history: Array.from({ length: 30 }, (_, i) => ({ t: i + 1, z: +(1.84 * Math.exp(-((29 - i) / 12.6)) + Math.sin(i * 0.45) * 0.75 * (1 - Math.exp(-((29 - i) / 12.6)))).toFixed(3), upper: 2.0, lower: -2.0 }))
+  },
+  "AVAX/SOL": {
+    pair: "AVAX/SOL", asset_a: "AVAX", asset_b: "SOL", hedge_ratio_beta: 0.178, spread_zscore: -2.15, half_life_days: 6.5, p_value_adf: 0.024, is_stationary: true, signal: "LONG_SPREAD",
+    spread_history: Array.from({ length: 30 }, (_, i) => ({ t: i + 1, z: +(-2.15 * Math.exp(-((29 - i) / 19.5)) + Math.sin(i * 0.45) * 0.75 * (1 - Math.exp(-((29 - i) / 19.5)))).toFixed(3), upper: 2.0, lower: -2.0 }))
+  },
+  "NEAR/SUI": {
+    pair: "NEAR/SUI", asset_a: "NEAR", asset_b: "SUI", hedge_ratio_beta: 1.340, spread_zscore: 0.45, half_life_days: 3.1, p_value_adf: 0.009, is_stationary: true, signal: "EQUILIBRIUM",
+    spread_history: Array.from({ length: 30 }, (_, i) => ({ t: i + 1, z: +(0.45 * Math.exp(-((29 - i) / 9.3)) + Math.sin(i * 0.45) * 0.75 * (1 - Math.exp(-((29 - i) / 9.3)))).toFixed(3), upper: 2.0, lower: -2.0 }))
+  },
+  "BTC/ETH": {
+    pair: "BTC/ETH", asset_a: "BTC", asset_b: "ETH", hedge_ratio_beta: 18.25, spread_zscore: -1.12, half_life_days: 8.4, p_value_adf: 0.035, is_stationary: true, signal: "EQUILIBRIUM",
+    spread_history: Array.from({ length: 30 }, (_, i) => ({ t: i + 1, z: +(-1.12 * Math.exp(-((29 - i) / 25.2)) + Math.sin(i * 0.45) * 0.75 * (1 - Math.exp(-((29 - i) / 25.2)))).toFixed(3), upper: 2.0, lower: -2.0 }))
+  },
+  "DOGE/SHIB": {
+    pair: "DOGE/SHIB", asset_a: "DOGE", asset_b: "SHIB", hedge_ratio_beta: 8420.0, spread_zscore: 2.38, half_life_days: 2.8, p_value_adf: 0.004, is_stationary: true, signal: "SHORT_SPREAD",
+    spread_history: Array.from({ length: 30 }, (_, i) => ({ t: i + 1, z: +(2.38 * Math.exp(-((29 - i) / 8.4)) + Math.sin(i * 0.45) * 0.75 * (1 - Math.exp(-((29 - i) / 8.4)))).toFixed(3), upper: 2.0, lower: -2.0 }))
+  },
+  "LINK/ETH": {
+    pair: "LINK/ETH", asset_a: "LINK", asset_b: "ETH", hedge_ratio_beta: 0.0055, spread_zscore: -2.40, half_life_days: 5.1, p_value_adf: 0.012, is_stationary: true, signal: "LONG_SPREAD",
+    spread_history: Array.from({ length: 30 }, (_, i) => ({ t: i + 1, z: +(-2.40 * Math.exp(-((29 - i) / 15.3)) + Math.sin(i * 0.45) * 0.75 * (1 - Math.exp(-((29 - i) / 15.3)))).toFixed(3), upper: 2.0, lower: -2.0 }))
+  }
+};
+
+function generateL2DepthFixture(symbol) {
+  assertInvariant(typeof symbol === "string", "symbol must be string");
+  const sym = (symbol || "BTC").toUpperCase();
+  const q = STANDALONE_FIXTURES.quotes[sym] || STANDALONE_FIXTURES.quotes["BTC"];
+  const mid = q?.price_usd || 64250.0;
+  const bids = [1, 2, 3, 4, 5].map(i => ({ price: +(mid * (1 - 0.0001 * i)).toFixed(2), amount: +(1.5 * i * 0.8).toFixed(2) }));
+  const asks = [1, 2, 3, 4, 5].map(i => ({ price: +(mid * (1 + 0.0001 * i)).toFixed(2), amount: +(1.2 * i * 0.9).toFixed(2) }));
+  const vBid = bids.reduce((s, b) => s + b.amount, 0);
+  const vAsk = asks.reduce((s, a) => s + a.amount, 0);
+  const obi = (vBid + vAsk) > 0 ? (vBid - vAsk) / (vBid + vAsk) : 0.0;
+  assertInvariant(bids.length === 5 && asks.length === 5, "depth must have 5 levels");
+  return {
+    symbol: sym,
+    mid_price: mid,
+    spread_bps: +(((asks[0].price - bids[0].price) / mid) * 10000).toFixed(2),
+    bids,
+    asks,
+    total_bid_vol: +vBid.toFixed(2),
+    total_ask_vol: +vAsk.toFixed(2),
+    obi_ratio: +obi.toFixed(3),
+  };
+}
+
+
 // Global Reactive State
 let anna = null;
 let currentAssets = [];
@@ -161,6 +212,16 @@ async function callScreener(action, extraArgs = {}) {
   if (action === "momentum") return STANDALONE_FIXTURES.momentum;
   if (action === "volatility") return STANDALONE_FIXTURES.volatility;
   if (action === "liquidity") return STANDALONE_FIXTURES.liquidity;
+  if (action === "funding") return STANDALONE_FIXTURES.funding;
+  if (action === "risk_parity") return { action: "risk_parity", weights: STANDALONE_FIXTURES.funding.slice(0, 5).map(f => ({ symbol: f.symbol, weight: 0.20 })), portfolio_var_95: 0.0485 };
+  if (action === "pairs_arbitrage") {
+    const pair = (extraArgs.pair || "SOL/ETH").toUpperCase();
+    return COINT_PAIRS_FIXTURE[pair] || COINT_PAIRS_FIXTURE["SOL/ETH"];
+  }
+  if (action === "l2_depth") {
+    const sym = (extraArgs.symbol || "BTC").toUpperCase();
+    return generateL2DepthFixture(sym);
+  }
   if (action === "quote") {
     const sym = (extraArgs.symbol || "BTC").toUpperCase();
     return STANDALONE_FIXTURES.quotes[sym] || STANDALONE_FIXTURES.quotes["BTC"];
@@ -1345,6 +1406,8 @@ async function renderAssetInspector() {
 
   renderInteractiveChart(sym);
   renderSlippageMatrix(item);
+  const l2Container = document.getElementById("l2-microstructure-container");
+  if (l2Container) renderL2Microstructure(l2Container, sym);
   renderFactorRadar(item);
   renderRiskGrid(item);
 }
@@ -1373,7 +1436,7 @@ function initKeyboardEngine() {
     }
     if (isTyping) return;
 
-    if (["1", "2", "3", "4", "5", "6"].includes(e.key)) {
+    if (["1", "2", "3", "4", "5", "6", "7"].includes(e.key)) {
       e.preventDefault();
       switchTabByIndex(parseInt(e.key) - 1);
     } else if (e.key === "j" || e.key === "ArrowDown") {
@@ -1403,9 +1466,9 @@ function initKeyboardEngine() {
 }
 
 function switchTabByIndex(idx) {
-  assertInvariant(idx >= 0 && idx <= 5, "tab index must be between 0 and 5");
+  assertInvariant(idx >= 0 && idx <= 6, "tab index must be between 0 and 6");
   const tabs = document.querySelectorAll(".nav-tab");
-  assertInvariant(tabs.length >= 6, "must have at least 6 tabs");
+  assertInvariant(tabs.length >= 7, "must have at least 7 tabs");
   if (tabs[idx]) tabs[idx].click();
 }
 
@@ -1674,6 +1737,9 @@ function parseAndExecuteCommand(rawInput) {
   if (input === "4" || input === "INSP" || input === "INSPECTOR" || input === "TAB 4" || input === "T4") { switchTabByIndex(3); return true; }
   if (input === "5" || input === "CORR" || input === "CORRELATION" || input === "HEATMAP" || input === "MATRIX" || input === "TAB 5" || input === "T5") { switchTabByIndex(4); return true; }
   if (input === "6" || input === "CARRY" || input === "FUNDING" || input === "PARITY" || input === "RISK" || input === "TAB 6" || input === "T6") { switchTabByIndex(5); return true; }
+  if (input === "7" || input === "PAIRS" || input === "STATARB" || input === "COINT" || input === "SPREAD" || input === "TAB 7" || input === "T7") { switchTabByIndex(6); return true; }
+  if (input === "OBI" || input === "DEPTH" || input === "ORDERBOOK") { switchTabByIndex(3); return true; }
+  if (input === "DISPATCH PAIRS" || input === "DISPATCH PAIR") { dispatchAnnaStatArb(); return true; }
   if (input === "DISPATCH" || input === "BRIEF" || input === "EMIT") { dispatchAnnaQuantBrief(); return true; }
 
   if (input === "RESET") {
@@ -1774,6 +1840,10 @@ function getCommandPaletteCatalog() {
     { cmd: "4", desc: "Switch to Quantitative Asset Inspector", badge: "Tab" },
     { cmd: "5", desc: "Switch to Cross-Sectional Correlation & Beta Matrix", badge: "Tab" },
     { cmd: "6", desc: "Switch to Risk Parity & Perpetual Carry", badge: "Tab" },
+    { cmd: "7", desc: "Switch to Statistical Arbitrage & Cointegration Pairs", badge: "Tab" },
+    { cmd: "PAIRS", desc: "View Cointegration Pairs & Spread Deviation", badge: "Tab" },
+    { cmd: "OBI", desc: "View Microstructure Order Book Imbalance", badge: "Inspect" },
+    { cmd: "DISPATCH PAIRS", desc: "Dispatch Pair Strategy to Anna chat", badge: "Action" },
     { cmd: "DISPATCH", desc: "Dispatch executive quantitative brief to Anna chat", badge: "Action" },
     { cmd: "CONFIG", desc: "Open API Key & Terminal Settings Vault", badge: "Settings" },
     { cmd: "KEYS", desc: "View Bloomberg Terminal Hotkeys Cheatsheet", badge: "Help" },
@@ -2014,6 +2084,173 @@ async function dispatchAnnaQuantBrief() {
   }
 }
 
+// --- Tab 7: Statistical Arbitrage & Cointegration Pairs ---
+function calcOrderBookImbalance(bids, asks) {
+  assertInvariant(Array.isArray(bids), "bids must be array");
+  assertInvariant(Array.isArray(asks), "asks must be array");
+  const vBid = (bids || []).reduce((acc, b) => acc + (Number(b.amount) || 0), 0);
+  const vAsk = (asks || []).reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
+  const total = vBid + vAsk;
+  if (total <= 0) return 0.0;
+  return Number(((vBid - vAsk) / total).toFixed(3));
+}
+
+function renderSpreadChartSVG(container, history, zCurrent) {
+  assertInvariant(container instanceof HTMLElement, "container must be HTMLElement");
+  assertInvariant(Array.isArray(history), "history must be array");
+  if (!history || history.length === 0) return;
+  const w = 560;
+  const h = 200;
+  const pad = 24;
+  const maxZ = 3.0;
+  const minZ = -3.0;
+  const scaleY = (z) => pad + ((maxZ - Math.max(minZ, Math.min(maxZ, z))) / (maxZ - minZ)) * (h - 2 * pad);
+  const scaleX = (idx) => pad + (idx / (history.length - 1)) * (w - 2 * pad);
+  const yUpper = scaleY(2.0);
+  const yZero = scaleY(0.0);
+  const yLower = scaleY(-2.0);
+  const pts = history.map((pt, i) => `${scaleX(i).toFixed(1)},${scaleY(pt.z).toFixed(1)}`).join(" ");
+  const lastX = scaleX(history.length - 1).toFixed(1);
+  const lastY = scaleY(zCurrent).toFixed(1);
+
+  container.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" class="spread-svg" style="width:100%;height:100%;display:block;">
+      <line x1="${pad}" y1="${yUpper}" x2="${w - pad}" y2="${yUpper}" stroke="rgba(239,68,68,0.4)" stroke-dasharray="4,4" stroke-width="1.2"/>
+      <text x="${pad + 4}" y="${yUpper - 4}" fill="#f87171" font-size="9" font-family="JetBrains Mono">+2.0σ Short Barrier</text>
+      <line x1="${pad}" y1="${yZero}" x2="${w - pad}" y2="${yZero}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+      <text x="${pad + 4}" y="${yZero - 4}" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">0.0σ Equilibrium</text>
+      <line x1="${pad}" y1="${yLower}" x2="${w - pad}" y2="${yLower}" stroke="rgba(34,197,94,0.4)" stroke-dasharray="4,4" stroke-width="1.2"/>
+      <text x="${pad + 4}" y="${yLower + 12}" fill="#4ade80" font-size="9" font-family="JetBrains Mono">-2.0σ Long Barrier</text>
+      <polyline points="${pts}" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="${lastX}" cy="${lastY}" r="4.5" fill="#60a5fa" stroke="#0a0e17" stroke-width="2"/>
+    </svg>`;
+}
+
+async function renderPairsScreen(selectedPair = "SOL/ETH") {
+  const sel = document.getElementById("select-coint-pair");
+  const pairKey = (selectedPair || (sel && sel.value) || "SOL/ETH").toUpperCase();
+  assertInvariant(typeof pairKey === "string", "pairKey must be string");
+  const chartBox = document.getElementById("pairs-spread-chart");
+  if (!chartBox) return;
+  assertInvariant(chartBox instanceof HTMLElement, "chartBox must be HTMLElement");
+
+  let data = await callScreener("pairs_arbitrage", { pair: pairKey });
+  if (!data) data = COINT_PAIRS_FIXTURE[pairKey] || COINT_PAIRS_FIXTURE["SOL/ETH"];
+
+  renderSpreadChartSVG(chartBox, data.spread_history, data.spread_zscore);
+  const betaEl = document.getElementById("pair-beta-val");
+  const zEl = document.getElementById("pair-zscore-val");
+  const hlEl = document.getElementById("pair-halflife-val");
+  const pEl = document.getElementById("pair-pval-val");
+  const badge = document.getElementById("pair-signal-badge");
+  const legA = document.getElementById("pair-leg-a");
+  const legB = document.getElementById("pair-leg-b");
+  const decayEl = document.getElementById("pairs-decay-rate");
+  const stationTag = document.getElementById("pairs-stationarity-tag");
+
+  if (betaEl) betaEl.textContent = Number(data.hedge_ratio_beta).toFixed(4);
+  if (zEl) zEl.textContent = `${data.spread_zscore >= 0 ? "+" : ""}${Number(data.spread_zscore).toFixed(2)}σ`;
+  if (hlEl) hlEl.textContent = `${Number(data.half_life_days).toFixed(1)} Days`;
+  if (pEl) pEl.textContent = Number(data.p_value_adf).toFixed(3);
+  if (decayEl) decayEl.textContent = `O-U Decay ${(Math.log(2) / data.half_life_days).toFixed(3)}/period`;
+  if (stationTag) stationTag.textContent = data.is_stationary ? `ADF: Stationary (p=${Number(data.p_value_adf).toFixed(3)})` : "ADF: Non-Stationary";
+
+  const sig = data.signal || "EQUILIBRIUM";
+  if (badge) {
+    badge.textContent = sig.replace("_", " ");
+    badge.className = `badge-status-pill font-mono ${sig.toLowerCase().replace("_", "-")}`;
+  }
+  if (legA && legB) {
+    if (sig === "SHORT_SPREAD") {
+      legA.textContent = `Sell $5,000 ${data.asset_a}`;
+      legA.className = "sizing-leg leg-a";
+      legB.textContent = `Buy $5,000 ${data.asset_b} (×${Number(data.hedge_ratio_beta).toFixed(4)})`;
+      legB.className = "sizing-leg leg-b";
+    } else if (sig === "LONG_SPREAD") {
+      legA.textContent = `Buy $5,000 ${data.asset_a}`;
+      legA.className = "sizing-leg leg-b";
+      legB.textContent = `Sell $5,000 ${data.asset_b} (×${Number(data.hedge_ratio_beta).toFixed(4)})`;
+      legB.className = "sizing-leg leg-a";
+    } else {
+      legA.textContent = `Neutral: Dispersion within ±0.5σ equilibrium`;
+      legA.className = "sizing-leg";
+      legB.textContent = `Standby for ±2.0σ trigger threshold`;
+      legB.className = "sizing-leg";
+    }
+  }
+}
+
+async function renderL2Microstructure(container, symbol = "BTC") {
+  assertInvariant(container instanceof HTMLElement, "container must be HTMLElement");
+  assertInvariant(typeof symbol === "string", "symbol must be string");
+  let depth = await callScreener("l2_depth", { symbol });
+  if (!depth) depth = generateL2DepthFixture(symbol);
+  const obi = calcOrderBookImbalance(depth.bids, depth.asks);
+  const bidPct = Math.round(((obi + 1.0) / 2.0) * 100);
+  const askPct = 100 - bidPct;
+  const bidRows = (depth.bids || []).slice(0, 5).map(b => `
+    <tr><td class="price-bid font-mono">${formatCurrency(b.price)}</td><td class="font-mono text-right">${b.amount}</td></tr>
+  `).join("");
+  const askRows = (depth.asks || []).slice(0, 5).map(a => `
+    <tr><td class="price-ask font-mono">${formatCurrency(a.price)}</td><td class="font-mono text-right">${a.amount}</td></tr>
+  `).join("");
+
+  container.innerHTML = `
+    <div class="l2-micro-header">
+      <span class="font-mono font-bold">L2 MICROSTRUCTURE &amp; OBI DEPTH</span>
+      <span class="compliance-tag font-mono">Top Spread: ${depth.spread_bps} bps</span>
+    </div>
+    <div class="obi-track-box">
+      <div class="obi-label-row font-mono">
+        <span class="price-bid">Bids: ${bidPct}% (${depth.total_bid_vol})</span>
+        <span class="font-bold">OBI: ${obi >= 0 ? "+" : ""}${obi}</span>
+        <span class="price-ask">Asks: ${askPct}% (${depth.total_ask_vol})</span>
+      </div>
+      <div class="obi-bar-track">
+        <div class="obi-bar-bid" style="width: ${bidPct}%;"></div>
+        <div class="obi-bar-ask" style="width: ${askPct}%;"></div>
+      </div>
+    </div>
+    <div class="l2-grid">
+      <table class="l2-depth-table">
+        <thead><tr><th>Bid Price</th><th class="text-right">Size</th></tr></thead>
+        <tbody>${bidRows}</tbody>
+      </table>
+      <table class="l2-depth-table">
+        <thead><tr><th>Ask Price</th><th class="text-right">Size</th></tr></thead>
+        <tbody>${askRows}</tbody>
+      </table>
+    </div>`;
+}
+
+async function dispatchAnnaStatArb() {
+  const sel = document.getElementById("select-coint-pair");
+  const pair = (sel && sel.value) ? sel.value : "SOL/ETH";
+  assertInvariant(typeof pair === "string", "pair must be string");
+  const data = COINT_PAIRS_FIXTURE[pair] || COINT_PAIRS_FIXTURE["SOL/ETH"];
+  assertInvariant(Boolean(data), "data must exist");
+
+  const message = `[STAT-ARB PAIR BRIEF: ${data.pair}]\n\n` +
+    `* Signal: ${data.signal} (Z-Score: ${data.spread_zscore >= 0 ? "+" : ""}${data.spread_zscore}σ)\n` +
+    `* Hedge Ratio (β): ${data.hedge_ratio_beta} | Half-Life: ${data.half_life_days} Days\n` +
+    `* Stationarity: ADF p-value ${data.p_value_adf} (${data.is_stationary ? "Stationary" : "Non-Stationary"})\n` +
+    `* Sizing: 50/50 delta-neutral long/short basket against sector beta.`;
+
+  const note = document.getElementById("dispatch-status-note");
+  if (anna && anna.chat && typeof anna.chat.write_message === "function") {
+    try {
+      await anna.chat.write_message({ message });
+      if (note) note.textContent = `Emitted ${data.pair} pairs brief to Anna OS.`;
+      return;
+    } catch (_e) {
+      if (note) note.textContent = `Emitted locally (Host communication fallback mode).`;
+    }
+  } else {
+    if (note) note.textContent = `Dispatched ${data.pair} brief locally (Sandbox active).`;
+    console.log("Stat-Arb Brief:\n", message);
+  }
+}
+
 // Navigation Tabs
 document.querySelectorAll(".nav-tab").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -2027,6 +2264,7 @@ document.querySelectorAll(".nav-tab").forEach(btn => {
     if (target === "tab-inspector") renderAssetInspector();
     if (target === "tab-correlation") renderCorrelationHeatmap();
     if (target === "tab-risk-parity") renderRiskAndCarryScreen();
+    if (target === "tab-pairs") renderPairsScreen();
   });
 });
 
@@ -2056,6 +2294,10 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("kyle-order-size-select")?.addEventListener("change", () => {
     if (selectedAsset) renderSlippageMatrix(selectedAsset);
   });
+  document.getElementById("select-coint-pair")?.addEventListener("change", (e) => {
+    renderPairsScreen(e.target.value);
+  });
+  document.getElementById("btn-dispatch-stat-arb")?.addEventListener("click", dispatchAnnaStatArb);
 
   const inspectorInput = document.getElementById("inspector-search-input");
   inspectorInput?.addEventListener("keydown", (e) => {
@@ -2072,5 +2314,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderAssetInspector();
   renderCorrelationHeatmap();
   renderRiskAndCarryScreen();
+  renderPairsScreen();
 });
+
 

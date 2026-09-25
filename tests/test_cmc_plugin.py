@@ -370,3 +370,61 @@ def test_v3_bundle_contracts():
     assert "renderRiskParityWeights" in js
     assert "dispatchAnnaQuantBrief" in js
 
+
+def test_action_pairs_arbitrage():
+    from cmc_plugin import tool_screener
+    res = tool_screener(action="pairs_arbitrage", pair="SOL/ETH")
+    assert res["action"] == "pairs_arbitrage"
+    assert "pair" in res
+    assert res["pair"] == "SOL/ETH"
+    assert "hedge_ratio_beta" in res
+    assert res["hedge_ratio_beta"] > 0.0
+    assert "spread_zscore" in res
+    assert "half_life_days" in res
+    assert res["half_life_days"] > 0.0
+    assert "signal" in res
+    assert res["signal"] in ["LONG_SPREAD", "SHORT_SPREAD", "EQUILIBRIUM"]
+    assert "spread_history" in res
+    assert len(res["spread_history"]) >= 20
+    for pt in res["spread_history"]:
+        assert "t" in pt
+        assert "z" in pt
+        assert "upper" in pt
+        assert "lower" in pt
+
+
+def test_action_l2_depth():
+    from cmc_plugin import tool_screener
+    res = tool_screener(action="l2_depth", symbol="BTC")
+    assert res["action"] == "l2_depth"
+    assert res["symbol"] == "BTC"
+    assert "mid_price" in res
+    assert "spread_bps" in res
+    assert res["spread_bps"] > 0.0
+    assert "bids" in res and len(res["bids"]) >= 5
+    assert "asks" in res and len(res["asks"]) >= 5
+    assert "obi_ratio" in res
+    assert -1.0 <= res["obi_ratio"] <= 1.0
+    assert "kyle_slippage_dynamic" in res
+
+
+def test_v4_bundle_contracts():
+    bundle_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bundle"))
+    js_path = os.path.join(bundle_dir, "app.js")
+    html_path = os.path.join(bundle_dir, "index.html")
+    with open(js_path, "r", encoding="utf-8") as f:
+        js = f.read()
+    with open(html_path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    # Tab 7 Stat-Arb Contracts
+    assert 'data-tab="tab-pairs"' in html
+    assert 'id="tab-pairs"' in html
+    assert 'id="select-coint-pair"' in html
+    assert 'id="pairs-spread-chart"' in html
+    assert "renderPairsScreen" in js
+    assert "renderSpreadChartSVG" in js
+    assert "renderL2Microstructure" in js
+    assert "calcOrderBookImbalance" in js
+
+

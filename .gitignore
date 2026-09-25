@@ -39,3 +39,4 @@ bundle/anna-tool-ids.js
 executas/cmc-screener/.anna/
 *.spec
 uv.lock
+scratch/

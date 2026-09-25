@@ -15,12 +15,12 @@
   "tools": [
     {
       "name": "screener",
-      "description": "Execute institutional quantitative crypto market screens. Use `action` to select: momentum | volatility | liquidity | breadth | quote | funding | risk_parity | neutral_alpha.",
+      "description": "Execute institutional quantitative crypto market screens. Use `action` to select: momentum | volatility | liquidity | breadth | quote | funding | risk_parity | neutral_alpha | pairs_arbitrage | l2_depth.",
       "parameters": [
         {
           "name": "action",
           "type": "string",
-          "description": "One of: momentum, volatility, liquidity, breadth, quote, funding, risk_parity, neutral_alpha.",
+          "description": "One of: momentum, volatility, liquidity, breadth, quote, funding, risk_parity, neutral_alpha, pairs_arbitrage, l2_depth.",
           "required": true
         },
         {
@@ -40,9 +40,16 @@
         {
           "name": "symbol",
           "type": "string",
-          "description": "Target ticker symbol (e.g. BTC, ETH, SOL) required for volatility, liquidity, or quote.",
+          "description": "Target ticker symbol (e.g. BTC, ETH, SOL) required for volatility, liquidity, quote, or l2_depth.",
           "required": false,
           "default": "BTC"
+        },
+        {
+          "name": "pair",
+          "type": "string",
+          "description": "Synthetic cointegrated pair (e.g. SOL/ETH, AVAX/SOL, NEAR/SUI, BTC/ETH) for pairs_arbitrage.",
+          "required": false,
+          "default": "SOL/ETH"
         }
       ]
     }

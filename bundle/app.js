@@ -1,5 +1,5 @@
 /**
- * CMC Alpha Terminal - Institutional Quant Controller (v1.0.15)
+ * CMC Alpha Terminal - Institutional Quant Controller (v1.0.17)
  * Master-Detail Split View · Reactive Sorting · Tabular Numerics · Weight Engine
  */
 
@@ -163,10 +163,10 @@ function updateConnectionTelemetry() {
   const endpointText = anna ? "Anna App Runtime (connected)" : "No host runtime (standalone)";
 
   const labels = {
-    connecting: { host: "Connecting...", status: "Connecting...", feed: "Feed: Connecting...", footer: "Executa v1.0.16, connecting..." },
-    live: { host: "Live, " + latencyText, status: "Connected, healthy (" + latencyText + ")", feed: "Feed: Live (Anna Host)", footer: "Executa v1.0.16, " + latencyText + " RTT" },
-    mock: { host: "Standalone, fixtures", status: "No host runtime, serving local fixtures", feed: "Feed: Local Fixtures (Offline)", footer: "Executa v1.0.16, standalone mode" },
-    error: { host: "Degraded, retrying", status: "Last call failed, falling back to fixtures", feed: "Feed: Degraded (Fixtures)", footer: "Executa v1.0.16, degraded" },
+    connecting: { host: "Connecting...", status: "Connecting...", feed: "Feed: Connecting...", footer: "Executa v1.0.17, connecting..." },
+    live: { host: "Live, " + latencyText, status: "Connected, healthy (" + latencyText + ")", feed: "Feed: Live (Anna Host)", footer: "Executa v1.0.17, " + latencyText + " RTT" },
+    mock: { host: "Standalone, fixtures", status: "No host runtime, serving local fixtures", feed: "Feed: Local Fixtures (Offline)", footer: "Executa v1.0.17, standalone mode" },
+    error: { host: "Degraded, retrying", status: "Last call failed, falling back to fixtures", feed: "Feed: Degraded (Fixtures)", footer: "Executa v1.0.17, degraded" },
   };
   const l = labels[mode] || labels.connecting;
 

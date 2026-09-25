@@ -1,7 +1,7 @@
 {
   "slug": "cmc-alpha-terminal",
   "name": "CMC Alpha Terminal",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "tagline": "Institutional Quantitative Crypto Intelligence, Slippage Depth & Alpha Screener for Anna AI OS",
   "description": "CMC Alpha Terminal brings hedge-fund grade quantitative analytics, Kyle's Lambda slippage depth modeling, and interactive multi-factor screening directly into the Anna AI OS desktop.\n\n### Core Capabilities\n- **Multi-Factor Cross-Sectional Momentum:** Rank top crypto assets by short-term (24h) and medium-term (7d) returns, volume weighting, and market capitalization scaling.\n- **Interactive Financial Vector Charting:** Dynamic price area and volume velocity charts with timeframe selection (24H, 7D, 30D, 90D) and magnetic crosshairs.\n- **Kyle's Lambda Slippage Depth Matrix:** Institutional square-root market impact modeling across order size tiers ($10k to $5M) with automated execution routing advice.\n- **5-Axis Factor Radar & Quant Risk Engine:** Pentagon multi-factor diagnostic and parametric VaR 95%, annualized Sharpe, and Parkinson spread.\n- **Bloomberg Terminal Hotkeys:** Instant keyboard navigation ('1-4' tabs, 'j'/'k' row traversal, '/' search, '?' shortcuts modal).\n- **Parkinson Realized Volatility Regimes:** Extreme-value Parkinson volatility estimation to classify market regimes into COMPRESSION, TRENDING, or EXPANSION_VOLATILE.\n- **Turnover & Liquidity Depth Analysis:** Measure 24h volume-to-market-cap velocity to classify execution slippage and liquidity risk tiers.",
   "category": "data",

@@ -1,5 +1,5 @@
 /**
- * CMC Alpha Terminal - Institutional Quant Controller (v1.0.11)
+ * CMC Alpha Terminal - Institutional Quant Controller (v1.0.12)
  * Master-Detail Split View · Reactive Sorting · Tabular Numerics · Weight Engine
  */
 
@@ -738,37 +738,66 @@ function initSearchAndFilterEvents() {
   applyBtn?.addEventListener("click", renderMomentumScreen);
 }
 
+function sanitizeField(rawVal, maxLen = 32) {
+  assertInvariant(typeof maxLen === "number", "maxLen must be numeric");
+  if (typeof rawVal !== "string") return "";
+  const cleaned = rawVal.replace(/[^a-zA-Z0-9\s._-]/g, "").slice(0, maxLen).trim();
+  assertInvariant(cleaned.length <= maxLen, "cleaned length must not exceed maxLen");
+  return cleaned;
+}
+
 // Context-Aware Anna Chat Integration
 function initAnnaChatIntegration() {
-  // Ask Anna about Selected Asset (Debounced to prevent RPC spam)
   let isDispatchingChat = false;
-  document.getElementById("btn-ask-anna-selected")?.addEventListener("click", async () => {
+  const chatBtn = document.getElementById("btn-ask-anna-selected");
+  if (!chatBtn) return;
+  assertInvariant(chatBtn instanceof HTMLElement, "chatBtn must be HTMLElement");
+
+  chatBtn.addEventListener("click", async () => {
     if (!selectedAsset || isDispatchingChat) return;
     isDispatchingChat = true;
-    const btn = document.getElementById("btn-ask-anna-selected");
-    if (btn) btn.disabled = true;
+    chatBtn.disabled = true;
 
-    const prompt = `Please explain why **${selectedAsset.symbol}** (${selectedAsset.name}) ranks **#${selectedAsset.rank}** with an Alpha Score of **${selectedAsset.momentum_score}/10.0**.\n\nContext:\n- Spot Price: ${formatCurrency(selectedAsset.price_usd)}\n- 24h Return: ${selectedAsset.percent_change_24h}%\n- 7d Return: ${selectedAsset.percent_change_7d}%\n- 24h Volume: ${formatCurrency(selectedAsset.volume_24h_usd)}\n- Parkinson Volatility: ${selectedAsset.parkinson_vol ? (selectedAsset.parkinson_vol * 100).toFixed(2) + '%' : 'N/A'} (${selectedAsset.regime || 'TRENDING'})\n- Turnover Ratio: ${selectedAsset.turnover_tier || 'DEEP_LIQUIDITY'}\n\nWhat are the primary drivers and risks for this asset over the next 48 hours?`;
+    const sym = sanitizeField(selectedAsset.symbol, 12);
+    const name = sanitizeField(selectedAsset.name, 32);
+    const rank = Number(selectedAsset.rank) || 1;
+    const score = Number(selectedAsset.momentum_score || 5.0).toFixed(2);
+    const priceStr = formatCurrency(selectedAsset.price_usd);
+    const ret24 = Number(selectedAsset.percent_change_24h || 0).toFixed(2);
+    const ret7d = Number(selectedAsset.percent_change_7d || 0).toFixed(2);
+    const volStr = formatCurrency(selectedAsset.volume_24h_usd);
+    const parkVol = selectedAsset.parkinson_vol ? (selectedAsset.parkinson_vol * 100).toFixed(2) + "%" : "N/A";
+    const regime = sanitizeField(selectedAsset.regime || "TRENDING", 24);
+    const turnover = sanitizeField(selectedAsset.turnover_tier || "DEEP_LIQUIDITY", 24);
+
+    const inquiry = `[QUANTITATIVE RESEARCH BRIEF] ${sym} (${name})
+- Market Rank: #${rank} | Alpha Score: ${score} / 10.0
+- Spot Reference: ${priceStr} | 24h: ${ret24}% | 7d: ${ret7d}%
+- 24h Volume: ${volStr} | Turnover Tier: ${turnover}
+- Realized Volatility: ${parkVol} (Regime: ${regime})
+
+Analysis Objective: Synthesize cross-sectional factor drivers, institutional orderbook depth, and 48-hour downside risk parameters.`;
 
     try {
       if (anna && anna.chat && typeof anna.chat.write_message === "function") {
-        await anna.chat.write_message({ message: prompt });
-        alert(`Analysis prompt for ${selectedAsset.symbol} sent to Anna Chat!`);
+        await anna.chat.write_message({ message: inquiry });
+        alert(`Quantitative brief for ${sym} dispatched to Anna Chat.`);
       } else {
-        navigator.clipboard.writeText(prompt);
-        alert(`Copied deep-dive prompt for ${selectedAsset.symbol} to clipboard!`);
+        navigator.clipboard.writeText(inquiry);
+        alert(`Copied quantitative analysis brief for ${sym} to clipboard.`);
       }
     } catch (err) {
       console.warn("Host chat dispatch skipped:", err);
-      navigator.clipboard.writeText(prompt);
-      alert(`Copied deep-dive prompt for ${selectedAsset.symbol} to clipboard!`);
+      navigator.clipboard.writeText(inquiry);
+      alert(`Copied quantitative analysis brief for ${sym} to clipboard.`);
     } finally {
       setTimeout(() => {
         isDispatchingChat = false;
-        if (btn) btn.disabled = false;
+        chatBtn.disabled = false;
       }, 1500);
     }
   });
+  assertInvariant(typeof isDispatchingChat === "boolean", "dispatch lock state must be boolean");
 }
 
 function getAdvisoryByRegime(regimeClass) {

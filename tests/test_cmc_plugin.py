@@ -264,4 +264,20 @@ def test_institutional_suite_contracts():
     assert "initWorkspacePersistence" in js
 
 
+def test_zero_prompt_leaks_in_bundle():
+    import re
+    bundle_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bundle"))
+    js_path = os.path.join(bundle_dir, "app.js")
+    html_path = os.path.join(bundle_dir, "index.html")
+    with open(js_path, "r", encoding="utf-8") as f:
+        js = f.read()
+    with open(html_path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    # Invariant: Zero prompt leaks; neither JS nor HTML may expose 'prompt' to end users
+    assert not re.search(r'\bprompt\b', js, re.IGNORECASE), "Detected leaked 'prompt' keyword in bundle/app.js"
+    assert not re.search(r'\bprompt\b', html, re.IGNORECASE), "Detected leaked 'prompt' keyword in bundle/index.html"
+
+
+
 

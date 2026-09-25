@@ -1,5 +1,5 @@
 /**
- * CMC Alpha Terminal - Institutional Quant Controller (v1.0.7)
+ * CMC Alpha Terminal - Institutional Quant Controller (v1.0.10)
  * Master-Detail Split View · Reactive Sorting · Tabular Numerics · Weight Engine
  */
 

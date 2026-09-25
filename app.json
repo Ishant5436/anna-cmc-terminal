@@ -1,7 +1,7 @@
 {
   "slug": "cmc-alpha-terminal",
   "name": "CMC Alpha Terminal",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "tagline": "Institutional Quantitative Crypto Intelligence & Alpha Screener for Anna AI OS",
   "description": "CMC Alpha Terminal brings hedge-fund grade quantitative analytics and crypto screening directly into the Anna AI OS desktop.\n\n### Core Capabilities\n- **Multi-Factor Cross-Sectional Momentum:** Rank top crypto assets by short-term (24h) and medium-term (7d) returns, volume weighting, and market capitalization scaling.\n- **Parkinson Realized Volatility Regimes:** Real-time extreme-value Parkinson volatility estimation to classify market regimes into COMPRESSION (breakout watch), TRENDING (momentum), or EXPANSION_VOLATILE (risk alert).\n- **Turnover & Liquidity Depth Analysis:** Measure 24h volume-to-market-cap velocity to classify execution slippage and liquidity risk tiers.\n- **Market Breadth & Dominance Tracking:** Track real-time market advance/decline ratios, Bitcoin dominance, and global DeFi liquidity.\n\n### Direct Host & Chat Integration\nInteract via natural language in Anna chat or through the dedicated glassmorphic desktop terminal window.",
   "category": "data",

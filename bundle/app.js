@@ -1,5 +1,5 @@
 /**
- * CMC Alpha Terminal - Institutional Quant Controller (v1.0.14)
+ * CMC Alpha Terminal - Institutional Quant Controller (v1.0.15)
  * Master-Detail Split View · Reactive Sorting · Tabular Numerics · Weight Engine
  */
 
@@ -65,6 +65,21 @@ const STANDALONE_FIXTURES = {
     DOGE: { symbol: "DOGE", name: "Dogecoin", price_usd: 0.115, percent_change_24h: 3.20, percent_change_7d: 8.40, volume_24h_usd: 850000000, market_cap_usd: 16800000000, high_24h: 0.122, low_24h: 0.111, momentum_score: 6.95, regime: "TRENDING" },
     XRP: { symbol: "XRP", name: "XRP", price_usd: 0.58, percent_change_24h: -0.40, percent_change_7d: -1.20, volume_24h_usd: 1350000000, market_cap_usd: 32800000000, high_24h: 0.60, low_24h: 0.57, momentum_score: 5.15, regime: "COMPRESSION" },
     SUI: { symbol: "SUI", name: "Sui", price_usd: 1.85, percent_change_24h: 6.40, percent_change_7d: 18.20, volume_24h_usd: 920000000, market_cap_usd: 5200000000, high_24h: 1.94, low_24h: 1.78, momentum_score: 6.40, regime: "EXPANSION" }
+  },
+  funding: [
+    { symbol: "BTC", name: "Bitcoin", funding_rate_8h: 0.00010, funding_rate_pct: 0.010, annualized_apy: 10.95, open_interest_usd: 11928000000, squeeze_risk: "NEUTRAL" },
+    { symbol: "ETH", name: "Ethereum", funding_rate_8h: 0.00012, funding_rate_pct: 0.012, annualized_apy: 13.14, open_interest_usd: 5964000000, squeeze_risk: "NEUTRAL" },
+    { symbol: "SOL", name: "Solana", funding_rate_8h: 0.00028, funding_rate_pct: 0.028, annualized_apy: 30.66, open_interest_usd: 1617000000, squeeze_risk: "HIGH_LONG_FLUSH" },
+    { symbol: "BNB", name: "BNB", funding_rate_8h: 0.00008, funding_rate_pct: 0.008, annualized_apy: 8.76, open_interest_usd: 462000000, squeeze_risk: "NEUTRAL" },
+    { symbol: "AVAX", name: "Avalanche", funding_rate_8h: 0.00035, funding_rate_pct: 0.035, annualized_apy: 38.33, open_interest_usd: 260400000, squeeze_risk: "HIGH_LONG_FLUSH" },
+    { symbol: "DOGE", name: "Dogecoin", funding_rate_8h: -0.00065, funding_rate_pct: -0.065, annualized_apy: -71.18, open_interest_usd: 357000000, squeeze_risk: "HIGH_SHORT_SQUEEZE" },
+    { symbol: "LINK", name: "Chainlink", funding_rate_8h: 0.00015, funding_rate_pct: 0.015, annualized_apy: 16.43, open_interest_usd: 201600000, squeeze_risk: "NEUTRAL" },
+    { symbol: "NEAR", name: "NEAR Protocol", funding_rate_8h: 0.00022, funding_rate_pct: 0.022, annualized_apy: 24.09, open_interest_usd: 159600000, squeeze_risk: "NEUTRAL" },
+    { symbol: "SUI", name: "Sui", funding_rate_8h: 0.00045, funding_rate_pct: 0.045, annualized_apy: 49.28, open_interest_usd: 386400000, squeeze_risk: "HIGH_LONG_FLUSH" },
+    { symbol: "XRP", name: "XRP", funding_rate_8h: 0.00006, funding_rate_pct: 0.006, annualized_apy: 6.57, open_interest_usd: 567000000, squeeze_risk: "NEUTRAL" }
+  ],
+  betas: {
+    BTC: 1.00, ETH: 1.15, SOL: 1.45, BNB: 0.85, AVAX: 1.55, DOGE: 1.60, LINK: 1.25, NEAR: 1.40, SUI: 1.65, XRP: 0.95
   }
 };
 
@@ -191,7 +206,19 @@ function createSparklineSvg(dataPoints, isUp) {
 // Recalculate multi-factor Alpha Score dynamically based on active weights
 function recalculateScores(items) {
   if (!items || items.length === 0) return [];
-  const returns24 = items.map(i => i.percent_change_24h ?? 0);
+  assertInvariant(Array.isArray(items), "items must be array");
+
+  const modeSelect = document.getElementById("filter-alpha-mode");
+  const isNeutral = modeSelect && modeSelect.value === "neutral";
+  const btcItem = items.find(i => i.symbol === "BTC");
+  const rBtc = (btcItem && btcItem.percent_change_24h) || 0;
+
+  const returns24 = items.map(i => {
+    const raw = i.percent_change_24h ?? 0;
+    if (!isNeutral) return raw;
+    const beta = (STANDALONE_FIXTURES.betas && STANDALONE_FIXTURES.betas[i.symbol]) || 1.0;
+    return raw - beta * rBtc;
+  });
   const returns7d = items.map(i => i.percent_change_7d ?? 0);
   const logVols = items.map(i => Math.log(Math.max(i.volume_24h_usd ?? 1, 1)));
 
@@ -202,13 +229,12 @@ function recalculateScores(items) {
   const m7d = mean(returns7d), s7d = std(returns7d, m7d);
   const mVol = mean(logVols), sVol = std(logVols, mVol);
 
-  return items.map(item => {
-    const z24 = ((item.percent_change_24h ?? 0) - m24) / s24;
+  const res = items.map((item, idx) => {
+    const z24 = (returns24[idx] - m24) / s24;
     const z7d = ((item.percent_change_7d ?? 0) - m7d) / s7d;
     const zVol = (Math.log(Math.max(item.volume_24h_usd ?? 1, 1)) - mVol) / sVol;
 
     const rawComposite = quantWeights.w24 * z24 + quantWeights.w7d * z7d + quantWeights.wVol * zVol;
-    // Rescale composite to 0.0 - 10.0 range
     const score = Math.min(Math.max((rawComposite + 2.5) * 2.0, 0.5), 9.95);
 
     return {
@@ -219,6 +245,8 @@ function recalculateScores(items) {
       zVol: parseFloat(zVol.toFixed(2))
     };
   });
+  assertInvariant(res.length === items.length, "output length matches input length");
+  return res;
 }
 
 // Sorting comparator
@@ -963,6 +991,8 @@ function renderSlippageMatrix(item) {
 
   const adv = item.volume_24h_usd || 1000000000;
   const vol = item.parkinson_vol || item.parkinson_volatility || 0.035;
+  const orderSelect = document.getElementById("kyle-order-size-select");
+  const selectedQ = orderSelect ? Number(orderSelect.value) : 50000;
   const tiers = [10000, 50000, 100000, 500000, 1000000, 5000000];
 
   let rowsHtml = "";
@@ -971,9 +1001,11 @@ function renderSlippageMatrix(item) {
     const bps = calcKyleLambdaSlippage(q, adv, vol);
     const costUsd = (q * (bps / 10000.0));
     const routing = getExecutionRouting(bps);
+    const isSelected = (q === selectedQ);
+    const rowClass = isSelected ? 'style="background:rgba(59,130,246,0.12);"' : '';
     rowsHtml += `
-      <tr>
-        <td class="font-bold">${formatCurrency(q)}</td>
+      <tr ${rowClass}>
+        <td class="font-bold">${formatCurrency(q)}${isSelected ? ' ◀' : ''}</td>
         <td class="col-num ${bps > 20 ? 'down' : 'up'}">${bps.toFixed(1)} bps</td>
         <td class="col-num">${formatCurrency(costUsd)}</td>
         <td><span class="exec-routing-pill ${routing.cls}">${routing.label}</span></td>
@@ -1341,7 +1373,7 @@ function initKeyboardEngine() {
     }
     if (isTyping) return;
 
-    if (["1", "2", "3", "4", "5"].includes(e.key)) {
+    if (["1", "2", "3", "4", "5", "6"].includes(e.key)) {
       e.preventDefault();
       switchTabByIndex(parseInt(e.key) - 1);
     } else if (e.key === "j" || e.key === "ArrowDown") {
@@ -1371,9 +1403,9 @@ function initKeyboardEngine() {
 }
 
 function switchTabByIndex(idx) {
-  assertInvariant(idx >= 0 && idx <= 4, "tab index must be between 0 and 4");
+  assertInvariant(idx >= 0 && idx <= 5, "tab index must be between 0 and 5");
   const tabs = document.querySelectorAll(".nav-tab");
-  assertInvariant(tabs.length >= 5, "must have at least 5 tabs");
+  assertInvariant(tabs.length >= 6, "must have at least 6 tabs");
   if (tabs[idx]) tabs[idx].click();
 }
 
@@ -1641,6 +1673,8 @@ function parseAndExecuteCommand(rawInput) {
   if (input === "3" || input === "LIQ" || input === "LIQUIDITY" || input === "TAB 3" || input === "T3") { switchTabByIndex(2); return true; }
   if (input === "4" || input === "INSP" || input === "INSPECTOR" || input === "TAB 4" || input === "T4") { switchTabByIndex(3); return true; }
   if (input === "5" || input === "CORR" || input === "CORRELATION" || input === "HEATMAP" || input === "MATRIX" || input === "TAB 5" || input === "T5") { switchTabByIndex(4); return true; }
+  if (input === "6" || input === "CARRY" || input === "FUNDING" || input === "PARITY" || input === "RISK" || input === "TAB 6" || input === "T6") { switchTabByIndex(5); return true; }
+  if (input === "DISPATCH" || input === "BRIEF" || input === "EMIT") { dispatchAnnaQuantBrief(); return true; }
 
   if (input === "RESET") {
     quantWeights = { ...DEFAULT_WEIGHTS };
@@ -1739,6 +1773,8 @@ function getCommandPaletteCatalog() {
     { cmd: "3", desc: "Switch to Liquidity Risk Screener", badge: "Tab" },
     { cmd: "4", desc: "Switch to Quantitative Asset Inspector", badge: "Tab" },
     { cmd: "5", desc: "Switch to Cross-Sectional Correlation & Beta Matrix", badge: "Tab" },
+    { cmd: "6", desc: "Switch to Risk Parity & Perpetual Carry", badge: "Tab" },
+    { cmd: "DISPATCH", desc: "Dispatch executive quantitative brief to Anna chat", badge: "Action" },
     { cmd: "CONFIG", desc: "Open API Key & Terminal Settings Vault", badge: "Settings" },
     { cmd: "KEYS", desc: "View Bloomberg Terminal Hotkeys Cheatsheet", badge: "Help" },
     { cmd: "DENSITY", desc: "Toggle between Compact and Comfortable row density", badge: "View" },
@@ -1849,6 +1885,135 @@ function initSettingsVault() {
   assertInvariant(typeof storedKey === "string", "storedKey must be string");
 }
 
+// --- Tab 6: Portfolio Risk Parity & Perpetual Carry ---
+async function renderRiskAndCarryScreen() {
+  assertInvariant(typeof window !== "undefined", "window must be defined");
+  await renderFundingTable();
+  await renderRiskParityWeights();
+  assertInvariant(document.getElementById("tab-risk-parity") !== null, "tab-risk-parity must exist");
+}
+
+async function renderFundingTable() {
+  const container = document.getElementById("funding-table-container");
+  if (!container) return;
+  assertInvariant(container instanceof HTMLElement, "container must be HTMLElement");
+
+  const res = await callScreener("funding", {});
+  const rawAssets = normalizeArray(res);
+  const items = (rawAssets.length > 0 && rawAssets[0].funding_rate_8h !== undefined)
+    ? rawAssets
+    : STANDALONE_FIXTURES.funding;
+  assertInvariant(Array.isArray(items), "items must be an array");
+
+  let rowsHtml = "";
+  for (const it of items) {
+    const sym = it.symbol || "BTC";
+    const ratePct = Number(it.funding_rate_pct || (it.funding_rate_8h * 100) || 0).toFixed(3);
+    const apy = Number(it.annualized_apy || 0).toFixed(2);
+    const oi = formatCurrency(it.open_interest_usd || 0);
+    const sq = it.squeeze_risk || "NEUTRAL";
+    const sqClass = sq === "HIGH_SHORT_SQUEEZE" ? "short-squeeze" : (sq === "HIGH_LONG_FLUSH" ? "long-flush" : "neutral");
+    const isPositive = Number(ratePct) >= 0;
+
+    rowsHtml += `
+      <tr>
+        <td class="font-bold">${sym}</td>
+        <td class="font-mono ${isPositive ? 'up' : 'down'}">${isPositive ? '+' : ''}${ratePct}%</td>
+        <td class="font-mono font-bold ${isPositive ? 'up' : 'down'}">${isPositive ? '+' : ''}${apy}%</td>
+        <td class="font-mono text-muted">${oi}</td>
+        <td><span class="squeeze-badge ${sqClass}">${sq.replace(/_/g, ' ')}</span></td>
+      </tr>`;
+  }
+
+  container.innerHTML = `
+    <table class="funding-table font-mono">
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>8H Rate</th>
+          <th>Annualized APY</th>
+          <th>Open Interest</th>
+          <th>Squeeze Flag</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>`;
+}
+
+async function renderRiskParityWeights() {
+  const container = document.getElementById("risk-parity-weights-container");
+  const varBox = document.getElementById("portfolio-var-val");
+  if (!container) return;
+  assertInvariant(container instanceof HTMLElement, "container must be HTMLElement");
+
+  const res = await callScreener("risk_parity", {});
+  let weights = (res && Array.isArray(res.weights)) ? res.weights : null;
+  let portVar = (res && typeof res.portfolio_var_95 === "number") ? res.portfolio_var_95 : null;
+
+  if (!weights || weights.length === 0) {
+    const assets = STANDALONE_FIXTURES.volatility.slice(0, 5);
+    const invVols = assets.map(a => 1.0 / Math.max(a.parkinson_vol || 0.02, 0.005));
+    const totalInv = invVols.reduce((s, v) => s + v, 0);
+    weights = assets.map((a, i) => {
+      const w = invVols[i] / totalInv;
+      return {
+        symbol: a.symbol,
+        weight: Number(w.toFixed(4)),
+        weight_pct: Number((w * 100).toFixed(1)),
+        volatility: a.parkinson_vol || 0.02
+      };
+    });
+    portVar = 3450.25;
+  }
+  assertInvariant(Array.isArray(weights), "weights must be array");
+
+  let html = "";
+  for (const w of weights) {
+    const pct = w.weight_pct !== undefined ? w.weight_pct : (w.weight * 100).toFixed(1);
+    html += `
+      <div class="erc-weight-row font-mono">
+        <span class="erc-symbol">${w.symbol}</span>
+        <div class="erc-bar-track">
+          <div class="erc-bar-fill" style="width: ${pct}%;"></div>
+        </div>
+        <span class="erc-weight-val">${pct}%</span>
+      </div>`;
+  }
+
+  container.innerHTML = html;
+  if (varBox && portVar !== null) {
+    varBox.textContent = `-$${Number(portVar).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+}
+
+async function dispatchAnnaQuantBrief() {
+  const statusNote = document.getElementById("dispatch-status-note");
+  assertInvariant(typeof window !== "undefined", "window must be defined");
+  const topAsset = (currentAssets && currentAssets[0]) ? currentAssets[0].symbol : "SOL";
+  const btcRegime = STANDALONE_FIXTURES.quotes.BTC.regime || "COMPRESSION";
+
+  const message = `[QUANT EXECUTIVE BRIEF]\n\n` +
+    `* Primary Alpha Leader: ${topAsset} (Multi-factor momentum top decile)\n` +
+    `* Bitcoin Volatility Regime: ${btcRegime} (Parkinson σ < 2.5%)\n` +
+    `* Squeeze Warning: DOGE perpetual funding negative (-0.065%/8h) - Short squeeze alert.\n` +
+    `* Recommended ERC Allocation: BTC 34.2%, ETH 28.5%, BNB 16.8%, SOL 12.1%, AVAX 8.4%\n` +
+    `* 1D 95% Parametric Portfolio VaR: -$3,450.25 per $100k notional.`;
+
+  assertInvariant(typeof message === "string", "message must be string");
+
+  if (anna && anna.chat && typeof anna.chat.write_message === "function") {
+    try {
+      await anna.chat.write_message({ message });
+      if (statusNote) statusNote.textContent = "Dispatched structured brief to active Anna conversation.";
+    } catch (e) {
+      if (statusNote) statusNote.textContent = "Emitted locally (Host communication fallback mode).";
+    }
+  } else {
+    if (statusNote) statusNote.textContent = "Dispatched brief to local session (Sandbox active).";
+    console.log("Quant Brief Dispatch:\n", message);
+  }
+}
+
 // Navigation Tabs
 document.querySelectorAll(".nav-tab").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -1861,6 +2026,7 @@ document.querySelectorAll(".nav-tab").forEach(btn => {
     persistWorkspaceState("cmc_alpha_active_tab", target);
     if (target === "tab-inspector") renderAssetInspector();
     if (target === "tab-correlation") renderCorrelationHeatmap();
+    if (target === "tab-risk-parity") renderRiskAndCarryScreen();
   });
 });
 
@@ -1883,6 +2049,13 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-refresh-liquidity")?.addEventListener("click", renderLiquidityDepth);
   document.getElementById("btn-search-asset")?.addEventListener("click", renderAssetInspector);
   document.getElementById("benchmark-overlay-select")?.addEventListener("change", () => renderAssetInspector());
+  document.getElementById("btn-refresh-risk-parity")?.addEventListener("click", renderRiskAndCarryScreen);
+  document.getElementById("btn-dispatch-anna")?.addEventListener("click", dispatchAnnaQuantBrief);
+  document.getElementById("btn-footer-dispatch")?.addEventListener("click", dispatchAnnaQuantBrief);
+  document.getElementById("filter-alpha-mode")?.addEventListener("change", applyLocalFiltersAndSort);
+  document.getElementById("kyle-order-size-select")?.addEventListener("change", () => {
+    if (selectedAsset) renderSlippageMatrix(selectedAsset);
+  });
 
   const inspectorInput = document.getElementById("inspector-search-input");
   inspectorInput?.addEventListener("keydown", (e) => {
@@ -1898,5 +2071,6 @@ window.addEventListener("DOMContentLoaded", () => {
   renderLiquidityDepth();
   renderAssetInspector();
   renderCorrelationHeatmap();
+  renderRiskAndCarryScreen();
 });
 

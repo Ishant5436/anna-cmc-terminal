@@ -308,3 +308,65 @@ def test_v2_institutional_suite_contracts():
     # Comparative Overlay contracts
     assert "rebaseSeriesTo100" in js
     assert "renderComparativeOverlay" in js
+
+
+def test_action_funding_structure():
+    from cmc_plugin import tool_screener
+    res = tool_screener(action="funding")
+    assert res["action"] == "funding"
+    assert "assets" in res
+    assert len(res["assets"]) >= 5
+    for item in res["assets"]:
+        assert "symbol" in item
+        assert "funding_rate_8h" in item
+        assert "annualized_apy" in item
+        assert "open_interest_usd" in item
+        assert "squeeze_risk" in item
+        # Check annualization math: 8h * 3 * 365 = 8h * 1095
+        expected_apy = round(item["funding_rate_8h"] * 3 * 365, 2)
+        assert abs(item["annualized_apy"] - expected_apy) < 0.05
+
+
+def test_action_risk_parity_weights():
+    from cmc_plugin import tool_screener
+    res = tool_screener(action="risk_parity")
+    assert res["action"] == "risk_parity"
+    assert "weights" in res
+    weights = res["weights"]
+    assert len(weights) >= 3
+    total_w = sum(w["weight"] for w in weights)
+    assert abs(total_w - 1.0) < 0.001
+    assert "portfolio_var_95" in res
+    assert res["portfolio_var_95"] > 0.0
+
+
+def test_action_neutral_alpha():
+    from cmc_plugin import tool_screener
+    res = tool_screener(action="neutral_alpha")
+    assert res["action"] == "neutral_alpha"
+    assert "assets" in res
+    for a in res["assets"]:
+        assert "symbol" in a
+        assert "beta_btc" in a
+        assert "raw_return_24h" in a
+        assert "residual_alpha_24h" in a
+        assert "neutral_score" in a
+
+
+def test_v3_bundle_contracts():
+    bundle_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bundle"))
+    js_path = os.path.join(bundle_dir, "app.js")
+    html_path = os.path.join(bundle_dir, "index.html")
+    with open(js_path, "r", encoding="utf-8") as f:
+        js = f.read()
+    with open(html_path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    # Tab 6 Risk & Carry contracts
+    assert 'data-tab="tab-risk-parity"' in html
+    assert 'id="tab-risk-parity"' in html
+    assert "renderRiskAndCarryScreen" in js
+    assert "renderFundingTable" in js
+    assert "renderRiskParityWeights" in js
+    assert "dispatchAnnaQuantBrief" in js
+

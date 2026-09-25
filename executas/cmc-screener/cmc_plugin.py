@@ -38,13 +38,13 @@ MANIFEST: Dict[str, Any] = {
             "name": "screener",
             "description": (
                 "Execute institutional quantitative crypto market screens. Use `action` "
-                "to select: momentum | volatility | liquidity | breadth | quote."
+                "to select: momentum | volatility | liquidity | breadth | quote | funding | risk_parity | neutral_alpha."
             ),
             "parameters": [
                 {
                     "name": "action",
                     "type": "string",
-                    "description": "One of: momentum, volatility, liquidity, breadth, quote.",
+                    "description": "One of: momentum, volatility, liquidity, breadth, quote, funding, risk_parity, neutral_alpha.",
                     "required": True,
                 },
                 {
@@ -373,6 +373,126 @@ def action_quote(symbol: str = "BTC") -> Dict[str, Any]:
     }
 
 
+SAMPLE_FUNDING_RATES: Dict[str, float] = {
+    "BTC": 0.00010,
+    "ETH": 0.00012,
+    "SOL": 0.00028,
+    "BNB": 0.00008,
+    "AVAX": 0.00035,
+    "DOGE": -0.00065,
+    "LINK": 0.00015,
+    "NEAR": 0.00022,
+    "SUI": 0.00045,
+    "APT": 0.00018,
+}
+
+SAMPLE_BETAS: Dict[str, float] = {
+    "BTC": 1.00,
+    "ETH": 1.15,
+    "SOL": 1.45,
+    "BNB": 0.85,
+    "AVAX": 1.55,
+    "DOGE": 1.60,
+    "LINK": 1.25,
+    "NEAR": 1.40,
+    "SUI": 1.65,
+    "APT": 1.35,
+}
+
+
+def action_funding() -> Dict[str, Any]:
+    listings = DATA_SOURCE.fetch_listings(limit=50)
+    assert len(listings) > 0, "listings must not be empty"
+    items = []
+    for item in listings[:10]:
+        sym = str(item.get("symbol", "")).upper()
+        rate_8h = SAMPLE_FUNDING_RATES.get(sym, 0.00010)
+        vol_24h = float(item.get("volume_24h_usd") or 0.0)
+        apy = round(rate_8h * 3.0 * 365.0, 2)
+        sq_risk = "HIGH_SHORT_SQUEEZE" if rate_8h < -0.0005 else ("HIGH_LONG_FLUSH" if rate_8h > 0.0004 else "NEUTRAL")
+        items.append({
+            "symbol": sym,
+            "name": str(item.get("name", "")),
+            "funding_rate_8h": rate_8h,
+            "funding_rate_pct": round(rate_8h * 100.0, 4),
+            "annualized_apy": apy,
+            "open_interest_usd": round(vol_24h * 0.42, 2),
+            "squeeze_risk": sq_risk,
+        })
+    assert len(items) > 0, "items must not be empty"
+    return {
+        "action": "funding",
+        "data_source": DATA_SOURCE.last_source,
+        "assets": items,
+    }
+
+
+def action_risk_parity() -> Dict[str, Any]:
+    listings = DATA_SOURCE.fetch_listings(limit=50)
+    assert len(listings) >= 5, "listings must have at least 5 assets"
+    subset = listings[:5]
+    inv_vols: List[float] = []
+    vol_vals: List[float] = []
+    for item in subset:
+        h = float(item.get("high_24h_usd") or item.get("price_usd") or 1.0)
+        l = float(item.get("low_24h_usd") or item.get("price_usd") or 1.0)
+        vol = calc_parkinson_volatility(h, l)
+        vol_vals.append(vol)
+        inv_vols.append(1.0 / max(vol, 0.005))
+    total_inv = sum(inv_vols)
+    assert total_inv > 0.0, "total inverse volatility must be positive"
+    raw_weights = [iv / total_inv for iv in inv_vols]
+    w_sum = sum(raw_weights)
+    norm_weights = [round(w / w_sum, 4) for w in raw_weights]
+    diff = round(1.0 - sum(norm_weights), 4)
+    norm_weights[0] = round(norm_weights[0] + diff, 4)
+    weights_out = []
+    for i, it in enumerate(subset):
+        weights_out.append({
+            "symbol": str(it.get("symbol", "")).upper(),
+            "name": str(it.get("name", "")),
+            "volatility": round(vol_vals[i], 4),
+            "weight": norm_weights[i],
+            "weight_pct": round(norm_weights[i] * 100.0, 2),
+        })
+    avg_vol = sum(w * v for w, v in zip(norm_weights, vol_vals))
+    port_var = round(avg_vol * 1.645 * 100000.0, 2)
+    assert len(weights_out) == len(subset), "weights count invariant"
+    return {
+        "action": "risk_parity",
+        "data_source": DATA_SOURCE.last_source,
+        "weights": weights_out,
+        "portfolio_var_95": port_var,
+    }
+
+
+def action_neutral_alpha() -> Dict[str, Any]:
+    listings = DATA_SOURCE.fetch_listings(limit=50)
+    assert len(listings) > 0, "listings must not be empty"
+    btc_match = next((i for i in listings if str(i.get("symbol", "")).upper() == "BTC"), listings[0])
+    r_btc = float(btc_match.get("percent_change_24h") or 0.0)
+    results = []
+    for it in listings[:10]:
+        sym = str(it.get("symbol", "")).upper()
+        raw_r = float(it.get("percent_change_24h") or 0.0)
+        beta = SAMPLE_BETAS.get(sym, 1.0)
+        resid = round(raw_r - beta * r_btc, 2)
+        score = round(resid * 1.5 + 5.0, 2)
+        results.append({
+            "symbol": sym,
+            "name": str(it.get("name", "")),
+            "raw_return_24h": raw_r,
+            "beta_btc": beta,
+            "residual_alpha_24h": resid,
+            "neutral_score": score,
+        })
+    assert len(results) > 0, "results must not be empty"
+    return {
+        "action": "neutral_alpha",
+        "data_source": DATA_SOURCE.last_source,
+        "assets": results,
+    }
+
 
 def tool_screener(
     action: str = "momentum",
@@ -393,7 +513,13 @@ def tool_screener(
         return action_breadth()
     if act == "quote":
         return action_quote(symbol)
-    raise ValueError(f"Unknown action: {action!r}; expected momentum|volatility|liquidity|breadth|quote")
+    if act == "funding":
+        return action_funding()
+    if act == "risk_parity":
+        return action_risk_parity()
+    if act == "neutral_alpha":
+        return action_neutral_alpha()
+    raise ValueError(f"Unknown action: {action!r}; expected momentum|volatility|liquidity|breadth|quote|funding|risk_parity|neutral_alpha")
 
 
 TOOL_DISPATCH = {"screener": tool_screener}

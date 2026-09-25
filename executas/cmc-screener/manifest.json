@@ -15,12 +15,12 @@
   "tools": [
     {
       "name": "screener",
-      "description": "Execute institutional quantitative crypto market screens. Use `action` to select: momentum | volatility | liquidity | breadth | quote.",
+      "description": "Execute institutional quantitative crypto market screens. Use `action` to select: momentum | volatility | liquidity | breadth | quote | funding | risk_parity | neutral_alpha.",
       "parameters": [
         {
           "name": "action",
           "type": "string",
-          "description": "One of: momentum, volatility, liquidity, breadth, quote.",
+          "description": "One of: momentum, volatility, liquidity, breadth, quote, funding, risk_parity, neutral_alpha.",
           "required": true
         },
         {

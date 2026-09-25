@@ -1,5 +1,5 @@
 /**
- * CMC Alpha Terminal - Institutional Quant Controller (v1.0.12)
+ * CMC Alpha Terminal - Institutional Quant Controller (v1.0.14)
  * Master-Detail Split View · Reactive Sorting · Tabular Numerics · Weight Engine
  */
 
@@ -317,29 +317,10 @@ function applyBidirectionalBar(el, zVal) {
 }
 
 // Select an asset and populate the Right Inspector Detail Pane
-function selectAsset(symbol) {
-  const asset = currentAssets.find(a => a.symbol === symbol) || currentAssets[0];
-  if (!asset) return;
-  selectedAsset = asset;
+function populateDetailPaneFactors(asset) {
+  assertInvariant(asset !== null && typeof asset === "object", "asset must be valid object");
+  assertInvariant(typeof asset.symbol === "string", "asset.symbol must be string");
 
-  // Highlight selected row in table
-  document.querySelectorAll("#momentum-tbody tr").forEach(r => {
-    if (r.getAttribute("data-symbol") === symbol) {
-      r.classList.add("selected");
-    } else {
-      r.classList.remove("selected");
-    }
-  });
-
-  // Populate Right Detail Pane
-  const elSymbol = document.getElementById("detail-symbol");
-  const elName = document.getElementById("detail-name");
-  const elRank = document.getElementById("detail-rank");
-  const elPrice = document.getElementById("detail-price");
-  const el24h = document.getElementById("detail-24h");
-  const elScore = document.getElementById("detail-score-fraction");
-  const elMeterFill = document.getElementById("detail-meter-fill");
-  const elInterpretation = document.getElementById("detail-interpretation");
   const elBar24 = document.getElementById("factor-bar-24h");
   const elBar7d = document.getElementById("factor-bar-7d");
   const elBarVol = document.getElementById("factor-bar-vol");
@@ -350,6 +331,55 @@ function selectAsset(symbol) {
   const elRegimePill = document.getElementById("detail-regime-pill");
   const elTurnover = document.getElementById("detail-turnover-val");
   const elSlippagePill = document.getElementById("detail-slippage-pill");
+
+  const z24 = asset.z24 ?? 1.2;
+  const z7d = asset.z7d ?? 1.8;
+  const zVol = asset.zVol ?? 0.9;
+  if (elVal24) elVal24.textContent = `${z24 >= 0 ? '+' : ''}${z24.toFixed(2)} σ`;
+  if (elVal7d) elVal7d.textContent = `${z7d >= 0 ? '+' : ''}${z7d.toFixed(2)} σ`;
+  if (elValVol) elValVol.textContent = `${zVol >= 0 ? '+' : ''}${zVol.toFixed(2)} σ`;
+
+  applyBidirectionalBar(elBar24, z24);
+  applyBidirectionalBar(elBar7d, z7d);
+  applyBidirectionalBar(elBarVol, zVol);
+
+  const vol = (asset.parkinson_vol ?? 0.035) * 100;
+  if (elParkinson) elParkinson.textContent = `${vol.toFixed(2)}%`;
+  const rawRegime = asset.regime ?? (vol > 5.0 ? "EXPANSION" : vol > 2.5 ? "TRENDING" : "COMPRESSION");
+  if (elRegimePill) {
+    elRegimePill.textContent = rawRegime;
+    elRegimePill.className = `risk-v regime-pill ${rawRegime.toLowerCase()}`;
+  }
+
+  const mcap = asset.market_cap_usd || (asset.price_usd * 1e8);
+  const turnover = ((asset.volume_24h_usd || 1e8) / mcap) * 100;
+  if (elTurnover) elTurnover.textContent = `${turnover.toFixed(2)}%`;
+  if (elSlippagePill) {
+    const tier = turnover > 5 ? "DEEP" : turnover > 2 ? "MODERATE" : "MINIMAL";
+    elSlippagePill.textContent = tier;
+    elSlippagePill.className = `risk-v tier-pill ${tier === 'MINIMAL' ? 'minimal' : ''}`;
+  }
+}
+
+function selectAsset(symbol) {
+  assertInvariant(typeof symbol === "string", "symbol must be string");
+  const asset = currentAssets.find(a => a.symbol === symbol) || currentAssets[0];
+  if (!asset) return;
+  assertInvariant(asset.symbol.length > 0, "asset symbol must be non-empty");
+  selectedAsset = asset;
+
+  document.querySelectorAll("#momentum-tbody tr").forEach(r => {
+    r.classList.toggle("selected", r.getAttribute("data-symbol") === symbol);
+  });
+
+  const elSymbol = document.getElementById("detail-symbol");
+  const elName = document.getElementById("detail-name");
+  const elRank = document.getElementById("detail-rank");
+  const elPrice = document.getElementById("detail-price");
+  const el24h = document.getElementById("detail-24h");
+  const elScore = document.getElementById("detail-score-fraction");
+  const elMeterFill = document.getElementById("detail-meter-fill");
+  const elInterpretation = document.getElementById("detail-interpretation");
   const elActionSym = document.getElementById("detail-action-symbol");
 
   if (elSymbol) elSymbol.textContent = asset.symbol;
@@ -380,37 +410,8 @@ function selectAsset(symbol) {
     }
   }
 
-  // Z-Score Factors with calibrated bidirectional bars
-  const z24 = asset.z24 ?? 1.2;
-  const z7d = asset.z7d ?? 1.8;
-  const zVol = asset.zVol ?? 0.9;
-  if (elVal24) elVal24.textContent = `${z24 >= 0 ? '+' : ''}${z24.toFixed(2)} σ`;
-  if (elVal7d) elVal7d.textContent = `${z7d >= 0 ? '+' : ''}${z7d.toFixed(2)} σ`;
-  if (elValVol) elValVol.textContent = `${zVol >= 0 ? '+' : ''}${zVol.toFixed(2)} σ`;
-
-  applyBidirectionalBar(elBar24, z24);
-  applyBidirectionalBar(elBar7d, z7d);
-  applyBidirectionalBar(elBarVol, zVol);
-
-  // Risk & Volatility
-  const vol = (asset.parkinson_vol ?? 0.035) * 100;
-  if (elParkinson) elParkinson.textContent = `${vol.toFixed(2)}%`;
-  const rawRegime = asset.regime ?? (vol > 5.0 ? "EXPANSION" : vol > 2.5 ? "TRENDING" : "COMPRESSION");
-  if (elRegimePill) {
-    elRegimePill.textContent = rawRegime;
-    elRegimePill.className = `risk-v regime-pill ${rawRegime.toLowerCase()}`;
-  }
-
-  const mcap = asset.market_cap_usd || (asset.price_usd * 1e8);
-  const turnover = ((asset.volume_24h_usd || 1e8) / mcap) * 100;
-  if (elTurnover) elTurnover.textContent = `${turnover.toFixed(2)}%`;
-  if (elSlippagePill) {
-    const tier = turnover > 5 ? "DEEP" : turnover > 2 ? "MODERATE" : "MINIMAL";
-    elSlippagePill.textContent = tier;
-    elSlippagePill.className = `risk-v tier-pill ${tier === 'MINIMAL' ? 'minimal' : ''}`;
-  }
-
   if (elActionSym) elActionSym.textContent = asset.symbol;
+  populateDetailPaneFactors(asset);
 }
 
 // Filter and Sort current data snapshot
@@ -524,6 +525,30 @@ function initDensityToggle() {
   });
 }
 
+function bindWeightPresets(r24, r7d, rVol, updateWeightUI) {
+  assertInvariant(typeof updateWeightUI === "function", "updateWeightUI must be callable");
+  assertInvariant(r24 !== null && r7d !== null && rVol !== null, "range inputs must exist");
+  const presets = {
+    "balanced": [30, 50, 20],
+    "short-term": [60, 30, 10],
+    "macro-trend": [15, 70, 15],
+    "liquidity-first": [20, 40, 40]
+  };
+
+  document.querySelectorAll(".preset-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      document.querySelectorAll(".preset-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      const key = pill.getAttribute("data-preset");
+      const [p24, p7d, pVol] = presets[key] || [30, 50, 20];
+      if (r24) r24.value = p24;
+      if (r7d) r7d.value = p7d;
+      if (rVol) rVol.value = pVol;
+      updateWeightUI();
+    });
+  });
+}
+
 // Interactive Quant Weights Modal
 function initWeightsModal() {
   const modal = document.getElementById("weights-modal");
@@ -531,15 +556,13 @@ function initWeightsModal() {
   const closeBtn = document.getElementById("btn-close-weights-modal");
   const cancelBtn = document.getElementById("btn-cancel-weights");
   const saveBtn = document.getElementById("btn-save-weights");
-  const r24 = document.getElementById("range-weight-24h");
-  const r7d = document.getElementById("range-weight-7d");
-  const rVol = document.getElementById("range-weight-vol");
-  const v24 = document.getElementById("val-weight-24h");
-  const v7d = document.getElementById("val-weight-7d");
-  const vVol = document.getElementById("val-weight-vol");
+  const [r24, r7d, rVol] = ["range-weight-24h", "range-weight-7d", "range-weight-vol"].map(id => document.getElementById(id));
+  const [v24, v7d, vVol] = ["val-weight-24h", "val-weight-7d", "val-weight-vol"].map(id => document.getElementById(id));
   const sumVal = document.getElementById("weights-sum-val");
 
-  if (!modal || !openBtn) return;
+  if (!modal || !openBtn || !r24 || !r7d || !rVol) return;
+  assertInvariant(modal instanceof HTMLElement && openBtn instanceof HTMLElement, "elements must be HTMLElement");
+  assertInvariant(r24 instanceof HTMLInputElement, "r24 must be HTMLInputElement");
 
   const showModal = () => modal.classList.remove("hidden");
   const hideModal = () => modal.classList.add("hidden");
@@ -566,27 +589,7 @@ function initWeightsModal() {
   };
 
   [r24, r7d, rVol].forEach(el => el?.addEventListener("input", updateWeightUI));
-
-  // Presets
-  const presets = {
-    "balanced": [30, 50, 20],
-    "short-term": [60, 30, 10],
-    "macro-trend": [15, 70, 15],
-    "liquidity-first": [20, 40, 40]
-  };
-
-  document.querySelectorAll(".preset-pill").forEach(pill => {
-    pill.addEventListener("click", () => {
-      document.querySelectorAll(".preset-pill").forEach(p => p.classList.remove("active"));
-      pill.classList.add("active");
-      const key = pill.getAttribute("data-preset");
-      const [p24, p7d, pVol] = presets[key] || [30, 50, 20];
-      if (r24) r24.value = p24;
-      if (r7d) r7d.value = p7d;
-      if (rVol) rVol.value = pVol;
-      updateWeightUI();
-    });
-  });
+  bindWeightPresets(r24, r7d, rVol, updateWeightUI);
 
   saveBtn?.addEventListener("click", () => {
     const w1 = parseInt(r24.value) / 100;
@@ -599,7 +602,6 @@ function initWeightsModal() {
       badgeLabel.textContent = `24H ${parseInt(w1 * 100)}% · 7D ${parseInt(w2 * 100)}% · VOL ${parseInt(w3 * 100)}%`;
     }
 
-    // Recalculate scores and re-render
     currentAssets = recalculateScores(currentAssets);
     applyLocalFiltersAndSort();
     hideModal();
@@ -812,78 +814,84 @@ function resolveAssetName(sym) {
   return match?.name || sym;
 }
 
+function renderVolatilityRowHtml(item) {
+  assertInvariant(item !== null && typeof item === "object", "item must be object");
+  const sym = item.symbol ?? "BTC";
+  assertInvariant(typeof sym === "string", "symbol must be string");
+  const name = resolveAssetName(sym);
+  const rawRegime = item.regime ?? "COMPRESSION";
+  const regime = String(rawRegime).toLowerCase();
+  const regimeClass = regime.includes("compression") ? "compression" : regime.includes("trending") ? "trending" : "expansion";
+  const volNum = item.parkinson_volatility ?? item.parkinson_vol ?? 0.02;
+  const volPct = (volNum * 100).toFixed(2);
+  const volBarWidth = Math.min(100, Math.max(8, (volNum / 0.08) * 100));
+  const price = item.price_usd ?? 0;
+  const high = item.high_24h_usd ?? item.high_24h ?? (price > 0 ? price * 1.02 : 1);
+  const low = item.low_24h_usd ?? item.low_24h ?? (price > 0 ? price * 0.98 : 0);
+  const span = Math.max(high - low, 0.0001);
+  const rawChannelPct = ((price - low) / span) * 100;
+  const channelPct = Math.max(2, Math.min(98, rawChannelPct));
+  const advisory = getAdvisoryByRegime(regimeClass);
+
+  return `
+    <tr>
+      <td>
+        <div class="asset-cell">
+          <div class="asset-icon-box">${sym.slice(0, 3)}</div>
+          <div class="asset-text-group">
+            <span class="asset-symbol">${sym}</span>
+            <span class="asset-name">${name}</span>
+          </div>
+        </div>
+      </td>
+      <td class="col-num">${formatCurrency(price)}</td>
+      <td>
+        <div class="range-channel-wrap font-mono">
+          <span class="range-extreme-val left">${formatCurrency(low)}</span>
+          <div class="range-channel-track" title="Spot: ${formatCurrency(price)} (${channelPct.toFixed(0)}% of 24h channel)">
+            <div class="range-channel-fill" style="width: ${channelPct}%;"></div>
+            <div class="range-channel-thumb ${regimeClass}" style="left: ${channelPct}%;"></div>
+          </div>
+          <span class="range-extreme-val right">${formatCurrency(high)}</span>
+        </div>
+      </td>
+      <td class="col-num">
+        <div class="vol-sigma-cell font-mono">
+          <span class="vol-sigma-val" style="color: var(--quant-blue);">${volPct}%</span>
+          <div class="vol-sigma-bar">
+            <div class="vol-sigma-fill ${regimeClass}" style="width: ${volBarWidth}%;"></div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <span class="regime-pill ${regimeClass}">${String(rawRegime).replace('_', ' ')}</span>
+      </td>
+      <td>
+        <span class="vol-advisory-text">${advisory}</span>
+      </td>
+    </tr>
+  `;
+}
+
 // Volatility Regimes (Tab 2 - Institutional Quant Table)
 async function renderVolatilityRegimes() {
   const tbody = document.getElementById("volatility-tbody");
   const spinner = document.getElementById("volatility-spinner");
   if (!tbody) return;
+  assertInvariant(tbody instanceof HTMLElement, "tbody must be HTMLElement");
 
   if (spinner) spinner.classList.remove("hidden");
   const raw = await callScreener("volatility", { symbol: "ALL" });
   if (spinner) spinner.classList.add("hidden");
   const items = normalizeArray(raw);
+  assertInvariant(Array.isArray(items), "items must be array");
 
   if (items.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6" style="color: var(--quant-red); text-align: center; padding: 20px;">Failed to compute volatility regimes.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = items.map(item => {
-    const sym = item.symbol ?? "BTC";
-    const name = resolveAssetName(sym);
-    const rawRegime = item.regime ?? "COMPRESSION";
-    const regime = String(rawRegime).toLowerCase();
-    const regimeClass = regime.includes("compression") ? "compression" : regime.includes("trending") ? "trending" : "expansion";
-    const volNum = item.parkinson_volatility ?? item.parkinson_vol ?? 0.02;
-    const volPct = (volNum * 100).toFixed(2);
-    const volBarWidth = Math.min(100, Math.max(8, (volNum / 0.08) * 100));
-    const price = item.price_usd ?? 0;
-    const high = item.high_24h_usd ?? item.high_24h ?? (price > 0 ? price * 1.02 : 1);
-    const low = item.low_24h_usd ?? item.low_24h ?? (price > 0 ? price * 0.98 : 0);
-    const span = Math.max(high - low, 0.0001);
-    const rawChannelPct = ((price - low) / span) * 100;
-    const channelPct = Math.max(2, Math.min(98, rawChannelPct));
-    const advisory = getAdvisoryByRegime(regimeClass);
-
-    return `
-      <tr>
-        <td>
-          <div class="asset-cell">
-            <div class="asset-icon-box">${sym.slice(0, 3)}</div>
-            <div class="asset-text-group">
-              <span class="asset-symbol">${sym}</span>
-              <span class="asset-name">${name}</span>
-            </div>
-          </div>
-        </td>
-        <td class="col-num">${formatCurrency(price)}</td>
-        <td>
-          <div class="range-channel-wrap font-mono">
-            <span class="range-extreme-val left">${formatCurrency(low)}</span>
-            <div class="range-channel-track" title="Spot: ${formatCurrency(price)} (${channelPct.toFixed(0)}% of 24h channel)">
-              <div class="range-channel-fill" style="width: ${channelPct}%;"></div>
-              <div class="range-channel-thumb ${regimeClass}" style="left: ${channelPct}%;"></div>
-            </div>
-            <span class="range-extreme-val right">${formatCurrency(high)}</span>
-          </div>
-        </td>
-        <td class="col-num">
-          <div class="vol-sigma-cell font-mono">
-            <span class="vol-sigma-val" style="color: var(--quant-blue);">${volPct}%</span>
-            <div class="vol-sigma-bar">
-              <div class="vol-sigma-fill ${regimeClass}" style="width: ${volBarWidth}%;"></div>
-            </div>
-          </div>
-        </td>
-        <td>
-          <span class="regime-pill ${regimeClass}">${String(rawRegime).replace('_', ' ')}</span>
-        </td>
-        <td>
-          <span class="vol-advisory-text">${advisory}</span>
-        </td>
-      </tr>
-    `;
-  }).join("");
+  tbody.innerHTML = items.map(renderVolatilityRowHtml).join("");
 }
 
 // Liquidity Depth (Tab 3)
@@ -1170,6 +1178,10 @@ function renderInteractiveChart(symbol, tf) {
   const width = 560, height = 180;
   const { lineD, areaD, volBarsHtml, pts, minP, maxP } = buildSvgChartPaths(series, width, height);
 
+  const benchSelect = document.getElementById("benchmark-overlay-select");
+  const benchSymbol = benchSelect?.value || "NONE";
+  const overlaySvg = renderComparativeOverlay(benchSymbol, series, width, height);
+
   container.innerHTML = `
     <div class="chart-header">
       <div class="chart-title-group">
@@ -1191,6 +1203,7 @@ function renderInteractiveChart(symbol, tf) {
         ${volBarsHtml}
         <path d="${areaD}" fill="url(#chart-grad)"/>
         <path d="${lineD}" fill="none" stroke="#3b82f6" stroke-width="2"/>
+        ${overlaySvg}
         <line id="chart-crosshair-x" x1="0" y1="0" x2="0" y2="${height}" stroke="rgba(255,255,255,0.25)" stroke-dasharray="3,3" style="display:none;"/>
         <circle id="chart-crosshair-dot" r="4" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" style="display:none;"/>
       </svg>
@@ -1242,10 +1255,24 @@ function bindChartInteractions(symbol, width, height, pts) {
   });
 }
 
+function normalizeCommandTicker(str) {
+  assertInvariant(typeof str === "string", "input must be string");
+  let s = str.trim().toUpperCase();
+  s = s.replace(/^(INSPECT|VIEW|FIND|GO|CHECK|TICKER|ASSET)\s+/i, "");
+  s = s.replace(/\s+(GO|BUY|SELL|QUOTE|INFO|STATS|CHART)$/i, "");
+  s = s.replace(/[\/\-_]/g, " ");
+  s = s.replace(/\s+(USDT|USD|BUSD|PERP)$/i, "");
+  s = s.replace(/^\$/, "").trim();
+  assertInvariant(typeof s === "string", "ticker must be string");
+  return s;
+}
+
 // Asset Inspector Standalone (Tab 4)
 async function renderAssetInspector() {
   const input = document.getElementById("inspector-search-input");
-  const symbol = (input?.value || "BTC").trim().toUpperCase();
+  const rawSymbol = (input?.value || (selectedAsset && selectedAsset.symbol) || "BTC").trim().toUpperCase();
+  const symbol = normalizeCommandTicker(rawSymbol) || "BTC";
+  if (input && input.value !== symbol) input.value = symbol;
   const banner = document.getElementById("inspector-hero-banner");
   if (!banner) return;
   assertInvariant(typeof symbol === "string", "symbol must be string");
@@ -1314,7 +1341,7 @@ function initKeyboardEngine() {
     }
     if (isTyping) return;
 
-    if (["1", "2", "3", "4"].includes(e.key)) {
+    if (["1", "2", "3", "4", "5"].includes(e.key)) {
       e.preventDefault();
       switchTabByIndex(parseInt(e.key) - 1);
     } else if (e.key === "j" || e.key === "ArrowDown") {
@@ -1326,6 +1353,12 @@ function initKeyboardEngine() {
     } else if (e.key === "/") {
       e.preventDefault();
       document.getElementById("filter-search-input")?.focus();
+    } else if (e.key === " " || ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey))) {
+      e.preventDefault();
+      document.getElementById("btn-open-cmd")?.click();
+    } else if (e.key === ",") {
+      e.preventDefault();
+      document.getElementById("btn-open-settings")?.click();
     } else if (e.key === "r" || e.key === "R") {
       e.preventDefault();
       renderMomentumScreen();
@@ -1338,9 +1371,9 @@ function initKeyboardEngine() {
 }
 
 function switchTabByIndex(idx) {
-  assertInvariant(idx >= 0 && idx <= 3, "tab index must be between 0 and 3");
+  assertInvariant(idx >= 0 && idx <= 4, "tab index must be between 0 and 4");
   const tabs = document.querySelectorAll(".nav-tab");
-  assertInvariant(tabs.length >= 4, "must have at least 4 tabs");
+  assertInvariant(tabs.length >= 5, "must have at least 5 tabs");
   if (tabs[idx]) tabs[idx].click();
 }
 
@@ -1398,6 +1431,424 @@ function persistWorkspaceState(key, value) {
   }
 }
 
+// --- Comparative Vector Charting Engine ---
+function rebaseSeriesTo100(series) {
+  assertInvariant(Array.isArray(series), "series must be array");
+  assertInvariant(series.length > 0, "series must not be empty");
+  const first = series[0];
+  const base = typeof first === "number" ? first : (first?.price || 1.0);
+  const safeBase = base > 0 ? base : 1.0;
+  const rebased = [];
+  for (let i = 0; i < series.length; i++) {
+    const val = typeof series[i] === "number" ? series[i] : (series[i]?.price || 0.0);
+    rebased.push(Number(((val / safeBase) * 100.0).toFixed(2)));
+  }
+  return rebased;
+}
+
+function renderComparativeOverlay(benchmarkSymbol, primarySeries, width, height) {
+  assertInvariant(typeof benchmarkSymbol === "string", "benchmarkSymbol must be string");
+  assertInvariant(Array.isArray(primarySeries), "primarySeries must be array");
+  if (benchmarkSymbol === "NONE") return "";
+
+  const bQuote = STANDALONE_FIXTURES.quotes[benchmarkSymbol] || STANDALONE_FIXTURES.quotes["BTC"];
+  const bSpot = bQuote?.price_usd || 100;
+  const bSeries = generateDeterministicSeries(bSpot, activeTimeframe, bQuote?.parkinson_vol || 0.03);
+
+  const rebasedPrimary = rebaseSeriesTo100(primarySeries);
+  const rebasedBench = rebaseSeriesTo100(bSeries);
+
+  const n = Math.min(rebasedPrimary.length, rebasedBench.length);
+  if (n < 2) return "";
+
+  const allVals = rebasedPrimary.concat(rebasedBench);
+  const minVal = Math.min(...allVals);
+  const maxVal = Math.max(...allVals);
+  const range = maxVal - minVal || 1.0;
+
+  let d = "";
+  for (let i = 0; i < n; i++) {
+    const x = (i / (n - 1)) * width;
+    const y = height - ((rebasedBench[i] - minVal) / range) * (height - 24) - 12;
+    d += (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+  }
+
+  return `<path d="${d}" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.85"/>`;
+}
+
+// --- Cross-Sectional Correlation & Beta Engine ---
+function computePearsonCorrelation(seriesA, seriesB) {
+  assertInvariant(Array.isArray(seriesA) && Array.isArray(seriesB), "input series must be arrays");
+  const n = Math.min(seriesA.length, seriesB.length);
+  assertInvariant(n >= 2, "series must contain at least 2 observations");
+
+  let sumA = 0;
+  let sumB = 0;
+  for (let i = 0; i < n; i++) {
+    sumA += seriesA[i];
+    sumB += seriesB[i];
+  }
+  const meanA = sumA / n;
+  const meanB = sumB / n;
+
+  let num = 0;
+  let denA = 0;
+  let denB = 0;
+  for (let i = 0; i < n; i++) {
+    const diffA = seriesA[i] - meanA;
+    const diffB = seriesB[i] - meanB;
+    num += diffA * diffB;
+    denA += diffA * diffA;
+    denB += diffB * diffB;
+  }
+  const denom = Math.sqrt(denA * denB);
+  if (denom < 1e-9) return 0.0;
+  const r = num / denom;
+  return Math.max(-1.0, Math.min(1.0, r));
+}
+
+function computeAssetBeta(assetReturns, btcReturns) {
+  assertInvariant(Array.isArray(assetReturns) && Array.isArray(btcReturns), "returns must be arrays");
+  const n = Math.min(assetReturns.length, btcReturns.length);
+  assertInvariant(n >= 2, "must have at least 2 return points");
+
+  let sumBtc = 0;
+  for (let i = 0; i < n; i++) sumBtc += btcReturns[i];
+  const meanBtc = sumBtc / n;
+
+  let sumAsset = 0;
+  for (let i = 0; i < n; i++) sumAsset += assetReturns[i];
+  const meanAsset = sumAsset / n;
+
+  let cov = 0;
+  let varBtc = 0;
+  for (let i = 0; i < n; i++) {
+    const diffBtc = btcReturns[i] - meanBtc;
+    cov += (assetReturns[i] - meanAsset) * diffBtc;
+    varBtc += diffBtc * diffBtc;
+  }
+  if (varBtc < 1e-9) return 1.0;
+  return Math.max(-10.0, Math.min(10.0, cov / varBtc));
+}
+
+function buildCorrelationMatrix(assets) {
+  assertInvariant(Array.isArray(assets), "assets must be array");
+  const topList = assets.slice(0, 10);
+  assertInvariant(topList.length > 0, "must have at least one asset for correlation");
+
+  const matrix = [];
+  for (let i = 0; i < topList.length; i++) {
+    const row = [];
+    const volA = topList[i].parkinson_vol || 0.03;
+    const seriesA = generateDeterministicSeries(topList[i].price_usd, "30D", volA).map(s => s.price);
+    for (let j = 0; j < topList.length; j++) {
+      if (i === j) {
+        row.push(1.0);
+      } else {
+        const volB = topList[j].parkinson_vol || 0.03;
+        const seriesB = generateDeterministicSeries(topList[j].price_usd, "30D", volB).map(s => s.price);
+        row.push(computePearsonCorrelation(seriesA, seriesB));
+      }
+    }
+    matrix.push({ asset: topList[i], row });
+  }
+  return matrix;
+}
+
+function renderCorrelationHeatmap() {
+  const container = document.getElementById("correlation-matrix-container");
+  if (!container) return;
+  assertInvariant(container instanceof HTMLElement, "container must be HTMLElement");
+
+  const assets = (currentAssets && currentAssets.length > 0) ? currentAssets : STANDALONE_FIXTURES.momentum;
+  const matrix = buildCorrelationMatrix(assets);
+  assertInvariant(Array.isArray(matrix), "matrix must be array");
+
+  let html = `<table class="correlation-table"><thead><tr><th class="sticky-col">Asset</th>`;
+  matrix.forEach(m => {
+    html += `<th>${m.asset.symbol}</th>`;
+  });
+  html += `<th>BTC Beta</th></tr></thead><tbody>`;
+
+  const btcAsset = assets.find(a => a.symbol === "BTC") || assets[0];
+  const btcPrices = generateDeterministicSeries(btcAsset.price_usd, "30D", btcAsset.parkinson_vol || 0.03).map(s => s.price);
+
+  matrix.forEach((m, rowIdx) => {
+    const assetPrices = generateDeterministicSeries(m.asset.price_usd, "30D", m.asset.parkinson_vol || 0.03).map(s => s.price);
+    const beta = computeAssetBeta(assetPrices, btcPrices);
+    html += `<tr><td class="sticky-col">${m.asset.symbol} <span style="font-size:9px;color:#8b95a5">#${m.asset.rank}</span></td>`;
+    m.row.forEach((val, colIdx) => {
+      let cls = "corr-neutral";
+      if (rowIdx === colIdx) cls = "corr-diagonal";
+      else if (val >= 0.70) cls = "corr-high";
+      else if (val <= -0.30) cls = "corr-inverse";
+      const valStr = val.toFixed(2);
+      html += `<td class="correlation-cell ${cls}" data-asset-a="${m.asset.symbol}" data-asset-b="${matrix[colIdx].asset.symbol}" data-r="${valStr}" title="${m.asset.symbol} vs ${matrix[colIdx].asset.symbol}: r = ${valStr}">${valStr}</td>`;
+    });
+    html += `<td style="color:${beta >= 1.0 ? '#93c5fd' : '#cbd5e1'};font-weight:600">${beta.toFixed(2)}</td></tr>`;
+  });
+
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+
+  container.querySelectorAll(".correlation-cell").forEach(cell => {
+    cell.addEventListener("click", () => {
+      const symA = cell.getAttribute("data-asset-a");
+      const target = ((currentAssets && currentAssets.length > 0) ? currentAssets : STANDALONE_FIXTURES.momentum).find(a => a.symbol === symA);
+      if (target) {
+        selectedAsset = target;
+        const inspInput = document.getElementById("inspector-search-input");
+        if (inspInput) inspInput.value = target.symbol;
+        switchTabByIndex(3);
+        renderAssetInspector();
+      }
+    });
+  });
+}
+
+// --- Bloomberg Command Palette Engine ---
+let commandPaletteIndex = 0;
+
+function handleBenchmarkCommand(input) {
+  assertInvariant(typeof input === "string", "input must be string");
+  const clean = input.replace(/^(OVERLAY|BENCHMARK|VS|COMPARE)\s+/i, "").trim();
+  assertInvariant(typeof clean === "string", "clean must be string");
+
+  const select = document.getElementById("benchmark-overlay-select");
+  if (!select) return false;
+
+  const validOptions = ["BTC", "ETH", "SOL", "NONE"];
+  if (validOptions.includes(clean)) {
+    select.value = clean;
+    select.dispatchEvent(new Event("change"));
+    switchTabByIndex(3);
+    return true;
+  }
+  return false;
+}
+
+function parseAndExecuteCommand(rawInput) {
+  assertInvariant(typeof rawInput === "string", "rawInput must be string");
+  const input = rawInput.trim().toUpperCase();
+  assertInvariant(input.length >= 0, "input length must be valid");
+
+  const modal = document.getElementById("command-palette-modal");
+  if (modal) modal.classList.add("hidden");
+  if (!input) return false;
+
+  if (input === "1" || input === "MOM" || input === "MOMENTUM" || input === "TAB 1" || input === "T1") { switchTabByIndex(0); return true; }
+  if (input === "2" || input === "VOL" || input === "VOLATILITY" || input === "TAB 2" || input === "T2") { switchTabByIndex(1); return true; }
+  if (input === "3" || input === "LIQ" || input === "LIQUIDITY" || input === "TAB 3" || input === "T3") { switchTabByIndex(2); return true; }
+  if (input === "4" || input === "INSP" || input === "INSPECTOR" || input === "TAB 4" || input === "T4") { switchTabByIndex(3); return true; }
+  if (input === "5" || input === "CORR" || input === "CORRELATION" || input === "HEATMAP" || input === "MATRIX" || input === "TAB 5" || input === "T5") { switchTabByIndex(4); return true; }
+
+  if (input === "RESET") {
+    quantWeights = { ...DEFAULT_WEIGHTS };
+    persistWorkspaceState("cmc_alpha_weights", quantWeights);
+    renderMomentumScreen();
+    return true;
+  }
+  if (input === "KEYS" || input === "HOTKEYS" || input === "HELP" || input === "SHORTCUTS") {
+    document.getElementById("shortcuts-modal")?.classList.remove("hidden");
+    return true;
+  }
+  if (input === "CONFIG" || input === "SETTINGS" || input === "KEY" || input === "VAULT") {
+    document.getElementById("settings-modal")?.classList.remove("hidden");
+    return true;
+  }
+  if (input === "DENSITY" || input === "COMPACT" || input === "COMFORTABLE") {
+    document.getElementById("btn-toggle-density")?.click();
+    return true;
+  }
+
+  if (handleBenchmarkCommand(input)) return true;
+
+  const ticker = normalizeCommandTicker(input);
+  const pool = (currentAssets && currentAssets.length > 0) ? currentAssets : STANDALONE_FIXTURES.momentum;
+  const found = pool.find(a => a.symbol.toUpperCase() === ticker || a.name.toUpperCase() === ticker);
+  if (found) {
+    selectedAsset = found;
+    const inspInput = document.getElementById("inspector-search-input");
+    if (inspInput) inspInput.value = found.symbol;
+    switchTabByIndex(3);
+    renderAssetInspector();
+    return true;
+  }
+  return false;
+}
+
+function initCommandPalette() {
+  const modal = document.getElementById("command-palette-modal");
+  const input = document.getElementById("command-palette-input");
+  const openBtn = document.getElementById("btn-open-cmd");
+  if (!modal || !input) return;
+  assertInvariant(modal instanceof HTMLElement && input instanceof HTMLElement, "elements must be HTMLElement");
+
+  const openPalette = () => {
+    modal.classList.remove("hidden");
+    input.value = "";
+    input.focus();
+    renderCommandSuggestions("");
+  };
+
+  openBtn?.addEventListener("click", openPalette);
+  input.addEventListener("input", (e) => renderCommandSuggestions(e.target.value));
+
+  input.addEventListener("keydown", (e) => {
+    const results = document.getElementById("command-palette-results");
+    const items = results?.querySelectorAll(".cmd-result-item") || [];
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (items.length > 0) {
+        commandPaletteIndex = (commandPaletteIndex + 1) % items.length;
+        updateSelectedCommandItem(items);
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (items.length > 0) {
+        commandPaletteIndex = (commandPaletteIndex - 1 + items.length) % items.length;
+        updateSelectedCommandItem(items);
+      }
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const selectedEl = results?.querySelector(".cmd-result-item.selected");
+      const cmdToExec = selectedEl?.getAttribute("data-cmd") || input.value;
+      parseAndExecuteCommand(cmdToExec);
+    } else if (e.key === "Escape") {
+      modal.classList.add("hidden");
+    }
+  });
+
+  assertInvariant(typeof commandPaletteIndex === "number", "commandPaletteIndex must be numeric");
+}
+
+function updateSelectedCommandItem(items) {
+  assertInvariant(items !== null, "items must be valid");
+  assertInvariant(typeof commandPaletteIndex === "number", "commandPaletteIndex must be numeric");
+  items.forEach((it, idx) => {
+    it.classList.toggle("selected", idx === commandPaletteIndex);
+  });
+}
+
+function getCommandPaletteCatalog() {
+  const pool = (currentAssets && currentAssets.length > 0) ? currentAssets : STANDALONE_FIXTURES.momentum;
+  assertInvariant(Array.isArray(pool), "pool must be array");
+  const catalog = [
+    { cmd: "1", desc: "Switch to Momentum Screener Tab", badge: "Tab" },
+    { cmd: "2", desc: "Switch to Volatility Regime Matrix", badge: "Tab" },
+    { cmd: "3", desc: "Switch to Liquidity Risk Screener", badge: "Tab" },
+    { cmd: "4", desc: "Switch to Quantitative Asset Inspector", badge: "Tab" },
+    { cmd: "5", desc: "Switch to Cross-Sectional Correlation & Beta Matrix", badge: "Tab" },
+    { cmd: "CONFIG", desc: "Open API Key & Terminal Settings Vault", badge: "Settings" },
+    { cmd: "KEYS", desc: "View Bloomberg Terminal Hotkeys Cheatsheet", badge: "Help" },
+    { cmd: "DENSITY", desc: "Toggle between Compact and Comfortable row density", badge: "View" },
+    { cmd: "RESET", desc: "Reset alpha score weights to default values", badge: "Action" },
+    { cmd: "OVERLAY BTC", desc: "Set comparative performance benchmark to Bitcoin", badge: "Overlay" },
+    { cmd: "OVERLAY ETH", desc: "Set comparative performance benchmark to Ethereum", badge: "Overlay" },
+    { cmd: "OVERLAY SOL", desc: "Set comparative performance benchmark to Solana", badge: "Overlay" },
+    { cmd: "OVERLAY NONE", desc: "Clear comparative performance benchmark overlay", badge: "Overlay" }
+  ];
+
+  pool.forEach(a => {
+    catalog.push({
+      cmd: `${a.symbol} GO`,
+      desc: `Inspect ${a.name} (#${a.rank}) - ${formatCurrency(a.price_usd)}`,
+      badge: "Asset"
+    });
+  });
+
+  assertInvariant(catalog.length >= 13, "catalog must contain base commands and assets");
+  return catalog;
+}
+
+function renderCommandSuggestions(filterText) {
+  const results = document.getElementById("command-palette-results");
+  if (!results) return;
+  assertInvariant(results instanceof HTMLElement, "results must be HTMLElement");
+  const cleanFilter = filterText.trim().toUpperCase();
+  const catalog = getCommandPaletteCatalog();
+  assertInvariant(Array.isArray(catalog), "catalog must be array");
+
+  let matched = catalog;
+  if (cleanFilter) {
+    const norm = normalizeCommandTicker(cleanFilter);
+    matched = catalog.filter(c => {
+      const cmdUpper = c.cmd.toUpperCase();
+      const descUpper = c.desc.toUpperCase();
+      return cmdUpper.includes(cleanFilter) || descUpper.includes(cleanFilter) || (norm && cmdUpper.startsWith(norm));
+    });
+  }
+
+  results.innerHTML = matched.slice(0, 14).map((m, idx) => `
+    <div class="cmd-result-item ${idx === 0 ? 'selected' : ''}" data-cmd="${m.cmd}">
+      <div class="cmd-item-label">
+        <span style="font-weight:700;color:#93c5fd">${m.cmd}</span>
+        <span style="color:#8b95a5">${m.desc}</span>
+      </div>
+      <span class="cmd-item-badge">${m.badge}</span>
+    </div>
+  `).join("");
+
+  commandPaletteIndex = 0;
+  results.querySelectorAll(".cmd-result-item").forEach(item => {
+    item.addEventListener("click", () => {
+      parseAndExecuteCommand(item.getAttribute("data-cmd"));
+    });
+  });
+}
+
+// --- Settings & API Key Vault Engine ---
+function initSettingsVault() {
+  const modal = document.getElementById("settings-modal");
+  const openBtn = document.getElementById("btn-open-settings");
+  const closeBtn = document.getElementById("btn-close-settings-modal");
+  const saveBtn = document.getElementById("btn-save-api-key");
+  const clearBtn = document.getElementById("btn-clear-api-key");
+  const toggleVisBtn = document.getElementById("btn-toggle-key-visibility");
+  const input = document.getElementById("input-cmc-api-key");
+  const statusNote = document.getElementById("api-key-status-note");
+  if (!modal || !input) return;
+  assertInvariant(modal instanceof HTMLElement && input instanceof HTMLElement, "elements must be HTMLElement");
+
+  const storedKey = localStorage.getItem("cmc_alpha_pro_key") || "";
+  if (storedKey) {
+    input.value = storedKey;
+    if (statusNote) statusNote.textContent = "Operating Mode: Authenticated CMC Pro Tier (Local Vault)";
+  }
+
+  openBtn?.addEventListener("click", () => {
+    modal.classList.remove("hidden");
+    input.value = localStorage.getItem("cmc_alpha_pro_key") || "";
+  });
+
+  closeBtn?.addEventListener("click", () => modal.classList.add("hidden"));
+
+  toggleVisBtn?.addEventListener("click", () => {
+    input.type = input.type === "password" ? "text" : "password";
+    toggleVisBtn.textContent = input.type === "password" ? "Show" : "Hide";
+  });
+
+  saveBtn?.addEventListener("click", () => {
+    const rawVal = input.value.trim();
+    if (rawVal) {
+      localStorage.setItem("cmc_alpha_pro_key", rawVal);
+      if (statusNote) statusNote.textContent = "Operating Mode: Authenticated CMC Pro Tier (Local Vault)";
+    } else {
+      localStorage.removeItem("cmc_alpha_pro_key");
+      if (statusNote) statusNote.textContent = "Operating Mode: Local Executa Engine";
+    }
+    modal.classList.add("hidden");
+  });
+
+  clearBtn?.addEventListener("click", () => {
+    input.value = "";
+    localStorage.removeItem("cmc_alpha_pro_key");
+    if (statusNote) statusNote.textContent = "Operating Mode: Local Executa Engine";
+  });
+
+  assertInvariant(typeof storedKey === "string", "storedKey must be string");
+}
+
 // Navigation Tabs
 document.querySelectorAll(".nav-tab").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -1409,6 +1860,7 @@ document.querySelectorAll(".nav-tab").forEach(btn => {
     if (panel) panel.classList.add("active");
     persistWorkspaceState("cmc_alpha_active_tab", target);
     if (target === "tab-inspector") renderAssetInspector();
+    if (target === "tab-correlation") renderCorrelationHeatmap();
   });
 });
 
@@ -1424,14 +1876,27 @@ window.addEventListener("DOMContentLoaded", () => {
   initAnnaChatIntegration();
   initKeyboardEngine();
   initWorkspacePersistence();
+  initCommandPalette();
+  initSettingsVault();
 
   document.getElementById("btn-refresh-volatility")?.addEventListener("click", renderVolatilityRegimes);
   document.getElementById("btn-refresh-liquidity")?.addEventListener("click", renderLiquidityDepth);
   document.getElementById("btn-search-asset")?.addEventListener("click", renderAssetInspector);
+  document.getElementById("benchmark-overlay-select")?.addEventListener("change", () => renderAssetInspector());
+
+  const inspectorInput = document.getElementById("inspector-search-input");
+  inspectorInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      renderAssetInspector();
+    }
+  });
 
   // Load Initial Dataset
   renderMomentumScreen();
   renderVolatilityRegimes();
   renderLiquidityDepth();
   renderAssetInspector();
+  renderCorrelationHeatmap();
 });
+

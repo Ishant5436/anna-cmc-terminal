@@ -21,7 +21,7 @@
         <div class="brand-meta">
           <div class="brand-title-row">
             <span class="brand-title">CMC Alpha</span>
-            <span class="hud-badge">v1.0.12</span>
+            <span class="hud-badge">v1.0.14</span>
           </div>
         </div>
       </div>
@@ -48,10 +48,25 @@
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <span>Inspector</span>
         </button>
+        <button class="nav-tab" data-tab="tab-correlation">
+          <kbd class="kbd-badge">5</kbd>
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+          <span>Correlation</span>
+        </button>
       </nav>
 
       <!-- Toolbar Right: Density Toggle & Differentiated Connection Beacon -->
       <div class="header-status-group">
+        <button class="density-toggle-btn font-mono" id="btn-open-cmd" title="Bloomberg Command Palette (Space or Cmd+K)">
+          <kbd class="kbd-badge">&gt;</kbd>
+          <span>CMD</span>
+        </button>
+
+        <button class="density-toggle-btn font-mono" id="btn-open-settings" title="Settings & API Key (,)">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Config</span>
+        </button>
+
         <button class="density-toggle-btn font-mono" id="btn-open-shortcuts" title="Bloomberg Hotkeys (?)">
           <kbd class="kbd-badge">?</kbd>
           <span>Keys</span>
@@ -478,10 +493,22 @@
               <p class="panel-subheading">High-resolution interactive charting, Kyle's Lambda slippage depth, 5-axis factor radar, and risk metrics.</p>
             </div>
             <div class="asset-search-wrap">
-              <input type="text" id="inspector-search-input" class="hud-input font-mono" value="BTC" placeholder="Symbol (e.g. BTC, ETH)..." spellcheck="false" />
-              <button class="action-btn-primary" id="btn-search-asset">
-                <span>Inspect</span>
-              </button>
+              <div class="search-input-group">
+                <input type="text" id="inspector-search-input" class="hud-input font-mono" value="BTC" placeholder="Symbol (e.g. BTC, ETH)..." spellcheck="false" />
+                <button class="action-btn-primary" id="btn-search-asset">
+                  <span>Inspect</span>
+                </button>
+              </div>
+              <div class="controls-separator" role="separator" aria-orientation="vertical"></div>
+              <div class="benchmark-overlay-group">
+                <label for="benchmark-overlay-select" class="benchmark-label font-mono">Benchmark:</label>
+                <select id="benchmark-overlay-select" class="hud-select font-mono" title="Benchmark Relative Performance Overlay">
+                  <option value="NONE">Overlay: None</option>
+                  <option value="BTC">Overlay: BTC (Rebased 100)</option>
+                  <option value="ETH">Overlay: ETH (Rebased 100)</option>
+                  <option value="SOL">Overlay: SOL (Rebased 100)</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -501,6 +528,25 @@
           </div>
         </div>
       </section>
+
+      <!-- PANEL 5: MULTI-ASSET CORRELATION & BETA MATRIX -->
+      <section class="terminal-panel" id="tab-correlation">
+        <div class="panel-glass-surface">
+          <div class="panel-headline-row">
+            <div>
+              <h2 class="panel-heading">Cross-Sectional Correlation &amp; Beta Matrix</h2>
+              <p class="panel-subheading">Rolling 30-day pairwise Pearson correlation coefficients (r) and BTC benchmark beta metrics.</p>
+            </div>
+            <div class="header-action-group">
+              <span class="compliance-tag font-mono">Regimes: High Co-movement (&ge;0.70) &bull; Orthogonal (-0.30 to 0.30) &bull; Inverse (&le;-0.30)</span>
+            </div>
+          </div>
+
+          <div class="correlation-matrix-wrapper" id="correlation-matrix-container">
+            <!-- Dynamically populated by renderCorrelationHeatmap -->
+          </div>
+        </div>
+      </section>
     </div>
 
     <!-- Terminal Footer -->
@@ -515,7 +561,7 @@
       <div class="footer-right">
         <span class="footer-telemetry font-mono">
           <span class="status-dot-sm live"></span>
-          <span>Executa v1.0.12 &middot; Invariants 100% Pass</span>
+          <span>Executa v1.0.14 &middot; Invariants 100% Pass</span>
         </span>
       </div>
     </footer>
@@ -649,6 +695,7 @@
           <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">2</kbd></span><span class="shortcut-desc">Volatility Regime Matrix</span></div>
           <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">3</kbd></span><span class="shortcut-desc">Liquidity Risk Screener</span></div>
           <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">4</kbd></span><span class="shortcut-desc">Quantitative Asset Inspector</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">5</kbd></span><span class="shortcut-desc">Correlation &amp; Beta Matrix</span></div>
         </div>
 
         <div class="shortcut-group">
@@ -656,6 +703,8 @@
           <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">j</kbd> / <kbd class="kbd-badge">↓</kbd></span><span class="shortcut-desc">Select Next Asset</span></div>
           <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">k</kbd> / <kbd class="kbd-badge">↑</kbd></span><span class="shortcut-desc">Select Previous Asset</span></div>
           <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">/</kbd></span><span class="shortcut-desc">Focus Search Input</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">Space</kbd> / <kbd class="kbd-badge">&gt;</kbd></span><span class="shortcut-desc">Bloomberg Command Palette</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">,</kbd></span><span class="shortcut-desc">Settings &amp; API Key Vault</span></div>
           <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">r</kbd></span><span class="shortcut-desc">Recalculate Alpha Scores</span></div>
           <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">?</kbd></span><span class="shortcut-desc">Open Keyboard Shortcuts</span></div>
           <div class="shortcut-row"><span class="shortcut-keys"><kbd class="kbd-badge">Esc</kbd></span><span class="shortcut-desc">Close Modals / Deselect</span></div>
@@ -664,6 +713,55 @@
 
       <div class="modal-footer">
         <button class="action-btn-primary btn-full-width" id="btn-close-shortcuts-ok">Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bloomberg-Style Command Palette Modal -->
+  <div class="modal-backdrop hidden" id="command-palette-modal" role="dialog" aria-modal="true" aria-labelledby="cmd-palette-title">
+    <div class="modal-card command-palette-card">
+      <div class="command-palette-header">
+        <span class="cmd-prefix-glyph">&gt;</span>
+        <input type="text" id="command-palette-input" class="cmd-input font-mono" placeholder="Type command or ticker (e.g. BTC GO, 1, VOL, RESET)..." autocomplete="off" spellcheck="false" />
+        <kbd class="kbd-badge">ESC</kbd>
+      </div>
+      <div class="command-palette-results font-mono" id="command-palette-results">
+        <!-- Dynamically rendered suggestions -->
+      </div>
+      <div class="command-palette-footer font-mono">
+        <span>Navigate: <kbd class="kbd-badge">&uarr;</kbd> <kbd class="kbd-badge">&darr;</kbd></span>
+        <span>Execute: <kbd class="kbd-badge">ENTER</kbd></span>
+        <span>Close: <kbd class="kbd-badge">ESC</kbd></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings & API Key Vault Modal -->
+  <div class="modal-backdrop hidden" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+    <div class="modal-card settings-modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <h3 class="modal-title" id="settings-modal-title">Terminal Settings &amp; API Key Vault</h3>
+        </div>
+        <button class="modal-close-btn" id="btn-close-settings-modal" aria-label="Close settings modal">&times;</button>
+      </div>
+
+      <div class="settings-body font-mono">
+        <div class="settings-section">
+          <label class="settings-label" for="input-cmc-api-key">CoinMarketCap Pro API Key</label>
+          <p class="settings-help">Stored locally in browser sandbox. Never committed, transmitted in telemetry, or written to disk.</p>
+          <div class="api-key-input-row">
+            <input type="password" id="input-cmc-api-key" class="hud-input font-mono" placeholder="Paste CMC Pro API Key..." />
+            <button class="action-btn-secondary" id="btn-toggle-key-visibility">Show</button>
+          </div>
+          <div class="settings-status-note" id="api-key-status-note">Operating Mode: Local Executa Engine</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-btn-secondary" id="btn-clear-api-key">Clear</button>
+        <button class="action-btn-primary" id="btn-save-api-key">Save Settings</button>
       </div>
     </div>
   </div>

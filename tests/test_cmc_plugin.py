@@ -279,5 +279,32 @@ def test_zero_prompt_leaks_in_bundle():
     assert not re.search(r'\bprompt\b', html, re.IGNORECASE), "Detected leaked 'prompt' keyword in bundle/index.html"
 
 
+def test_v2_institutional_suite_contracts():
+    bundle_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bundle"))
+    js_path = os.path.join(bundle_dir, "app.js")
+    html_path = os.path.join(bundle_dir, "index.html")
+    with open(js_path, "r", encoding="utf-8") as f:
+        js = f.read()
+    with open(html_path, "r", encoding="utf-8") as f:
+        html = f.read()
 
+    # Tab 5 Correlation Matrix contracts
+    assert 'data-tab="tab-correlation"' in html
+    assert 'id="tab-correlation"' in html
+    assert "computePearsonCorrelation" in js
+    assert "renderCorrelationHeatmap" in js
 
+    # Command Palette contracts
+    assert 'id="command-palette-modal"' in html
+    assert 'id="command-palette-input"' in html
+    assert "initCommandPalette" in js
+    assert "parseAndExecuteCommand" in js
+
+    # Settings Vault contracts
+    assert 'id="settings-modal"' in html
+    assert 'id="input-cmc-api-key"' in html
+    assert "initSettingsVault" in js
+
+    # Comparative Overlay contracts
+    assert "rebaseSeriesTo100" in js
+    assert "renderComparativeOverlay" in js

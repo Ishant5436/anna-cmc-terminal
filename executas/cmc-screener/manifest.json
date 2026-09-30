@@ -42,7 +42,7 @@
           "type": "string",
           "description": "Target ticker symbol (e.g. BTC, ETH, SOL) required for volatility, liquidity, quote, or l2_depth.",
           "required": false,
-          "default": "BTC"
+          "default": "ALL"
         },
         {
           "name": "pair",

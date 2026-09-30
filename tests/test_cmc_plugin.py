@@ -428,3 +428,32 @@ def test_v4_bundle_contracts():
     assert "calcOrderBookImbalance" in js
 
 
+def test_cloud_agent_fixes_contracts():
+    """Verify all 4 Cloud Agent reviewer issue fixes exist and adhere to contracts."""
+    # 1. Screener returns multiple assets for volatility and liquidity
+    vol_res = handle_invoke({"tool": "screener", "arguments": {"action": "volatility", "symbol": "ALL"}})
+    assert vol_res["success"] is True
+    assert "assets" in vol_res["data"]
+    assert len(vol_res["data"]["assets"]) == 10
+
+    liq_res = handle_invoke({"tool": "screener", "arguments": {"action": "liquidity", "symbol": "ALL"}})
+    assert liq_res["success"] is True
+    assert "assets" in liq_res["data"]
+    assert len(liq_res["data"]["assets"]) == 10
+
+    # 2. Bundle contracts for safe chat dispatch, toast, and multi-asset synthesis
+    bundle_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bundle"))
+    with open(os.path.join(bundle_dir, "app.js"), "r", encoding="utf-8") as f:
+        js = f.read()
+    with open(os.path.join(bundle_dir, "style.css"), "r", encoding="utf-8") as f:
+        css = f.read()
+
+    assert "showTerminalToast" in js
+    assert "safeDispatchChatMessage" in js
+    assert "btn-dispatched" in js
+    assert "items.length <= 1" in js
+    assert "terminal-toast" in css
+    assert "btn-dispatched" in css
+
+
+

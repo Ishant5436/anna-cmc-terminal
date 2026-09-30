@@ -249,12 +249,11 @@ def action_volatility(symbol: str = "ALL") -> Dict[str, Any]:
     assert len(listings) > 0, "listings must not be empty"
     vol_assets = [_format_volatility_item(it) for it in listings[:10]]
     if clean_sym in ("", "ALL"):
-        first = vol_assets[0]
         return {
             "action": "volatility",
             "data_source": DATA_SOURCE.last_source,
             "assets": vol_assets,
-            **first,
+            "count": len(vol_assets),
         }
     match = next((v for v in vol_assets if v["symbol"] == clean_sym), None)
     if not match:
@@ -303,12 +302,11 @@ def action_liquidity(symbol: str = "ALL") -> Dict[str, Any]:
     assert len(listings) > 0, "listings must not be empty"
     liq_assets = [_format_liquidity_item(it) for it in listings[:10]]
     if clean_sym in ("", "ALL"):
-        first = liq_assets[0]
         return {
             "action": "liquidity",
             "data_source": DATA_SOURCE.last_source,
             "assets": liq_assets,
-            **first,
+            "count": len(liq_assets),
         }
     match = next((v for v in liq_assets if v["symbol"] == clean_sym), None)
     if not match:

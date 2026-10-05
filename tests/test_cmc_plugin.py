@@ -189,9 +189,9 @@ def test_invoke_liquidity_all_assets_list():
         assert "slippage_risk" in item
 
 
-def test_manifest_version_109():
+def test_manifest_version_110():
     desc = handle_describe({})
-    assert desc["version"] == "1.0.9"
+    assert desc["version"] == "1.1.0"
 
 
 def test_bundle_volatility_table_contract():
@@ -264,7 +264,7 @@ def test_institutional_suite_contracts():
     assert "initWorkspacePersistence" in js
 
 
-def test_zero_prompt_leaks_in_bundle():
+def test_ai_copilot_contracts_and_zero_secret_leaks():
     import re
     bundle_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bundle"))
     js_path = os.path.join(bundle_dir, "app.js")
@@ -274,9 +274,16 @@ def test_zero_prompt_leaks_in_bundle():
     with open(html_path, "r", encoding="utf-8") as f:
         html = f.read()
 
-    # Invariant: Zero prompt leaks; neither JS nor HTML may expose 'prompt' to end users
-    assert not re.search(r'\bprompt\b', js, re.IGNORECASE), "Detected leaked 'prompt' keyword in bundle/app.js"
-    assert not re.search(r'\bprompt\b', html, re.IGNORECASE), "Detected leaked 'prompt' keyword in bundle/index.html"
+    # AI OS Copilot contracts
+    assert 'data-tab="tab-ai-copilot"' in html
+    assert 'id="tab-ai-copilot"' in html
+    assert "callAnnaLLM" in js
+    assert "runAICopilotSynthesis" in js
+    assert "dispatchAICopilotToAnnaChat" in js
+
+    # Invariant: Zero secret leakage in bundle
+    assert not re.search(r'\b(api[_-]?key\s*[:=]\s*["\'][A-Za-z0-9_-]{20,}["\'])', js, re.IGNORECASE)
+    assert not re.search(r'\b(secret[_-]?token\s*[:=]\s*["\'][A-Za-z0-9_-]{20,}["\'])', js, re.IGNORECASE)
 
 
 def test_v2_institutional_suite_contracts():

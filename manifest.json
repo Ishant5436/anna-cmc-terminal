@@ -3,6 +3,7 @@
   "permissions": [
     "tools.invoke",
     "chat.write_message",
+    "llm.complete",
     "storage.read",
     "storage.write",
     "ui.svg"
@@ -60,6 +61,9 @@
       ],
       "chat": [
         "write_message"
+      ],
+      "llm": [
+        "complete"
       ],
       "artifact": [],
       "fs": [],

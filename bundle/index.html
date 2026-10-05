@@ -21,7 +21,7 @@
         <div class="brand-meta">
           <div class="brand-title-row">
             <span class="brand-title">CMC Alpha</span>
-            <span class="hud-badge">v1.0.17</span>
+            <span class="hud-badge">v1.1.0</span>
           </div>
         </div>
       </div>
@@ -55,6 +55,10 @@
         <button class="nav-tab" data-tab="tab-pairs">
           <span class="tab-num">7</span>
           <span class="tab-name">STAT-ARB</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-ai-copilot">
+          <span class="tab-num">8</span>
+          <span class="tab-name">AI ALPHA</span>
         </button>
       </nav>
 
@@ -651,6 +655,66 @@
                   <span>Dispatch Pair Strategy to Anna</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL 8: AI ALPHA COPILOT & MARKET INTELLIGENCE -->
+      <section class="terminal-panel" id="tab-ai-copilot">
+        <div class="panel-glass-surface">
+          <div class="panel-headline-row">
+            <div>
+              <h2 class="panel-heading font-mono">INSTITUTIONAL AI ALPHA COPILOT</h2>
+              <p class="panel-subheading">Hedge fund intelligence &amp; quantitative market synthesis powered by Anna AI OS LLM.</p>
+            </div>
+            <div class="header-action-group">
+              <button class="action-btn-primary" id="btn-run-ai-copilot">
+                <span class="btn-spinner" id="ai-copilot-spinner" style="display: none;"></span>
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                <span>Run AI Alpha Synthesis</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Query Presets -->
+          <div class="preset-section">
+            <span class="preset-label font-mono">Intelligence Presets:</span>
+            <div class="preset-chips-wrap">
+              <button type="button" class="preset-chip active ai-query-chip" data-prompt="Generate comprehensive macro market intelligence brief with top factor outliers and liquidity regimes.">Macro Market Brief</button>
+              <button type="button" class="preset-chip ai-query-chip" data-prompt="Analyze SOL vs ETH cross-sectional momentum, Parkinson volatility spread, and factor divergence.">SOL vs ETH Divergence</button>
+              <button type="button" class="preset-chip ai-query-chip" data-prompt="Identify risk-adjusted statistical arbitrage pairs and mean-reversion trade setups.">Stat-Arb Trade Setup</button>
+              <button type="button" class="preset-chip ai-query-chip" data-prompt="Evaluate 8h perpetual funding rates and short squeeze probabilities across top volume assets.">Perp Funding &amp; Squeeze</button>
+            </div>
+          </div>
+
+          <!-- Prompt Input Form -->
+          <div class="form-grid" style="margin-bottom: 16px;">
+            <div class="form-field">
+              <div class="label-row font-mono">
+                <label class="field-label" for="input-ai-terminal-prompt">QUANTITATIVE PROMPT / INQUIRY</label>
+                <span class="char-count font-mono" id="ai-active-asset-label">Target Context: LIVE SCREENER UNIVERSE</span>
+              </div>
+              <textarea id="input-ai-terminal-prompt" class="hud-textarea font-mono" rows="3" placeholder="Enter market question (e.g. 'Analyze top 5 momentum assets under high Parkinson volatility regimes and recommend risk parity allocation...')" spellcheck="false">Generate comprehensive macro market intelligence brief with top factor outliers and liquidity regimes.</textarea>
+            </div>
+          </div>
+
+          <!-- AI Response Output Stage -->
+          <div class="ai-terminal-output-card" style="border: 1px solid var(--border); border-radius: 6px; background: rgba(15, 19, 25, 0.7); padding: 16px; min-height: 200px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="status-marker font-mono" style="color: var(--quant-blue, #3b82f6);">●</span>
+                <span class="font-mono font-bold" style="font-size: 12px; letter-spacing: 0.05em; color: #e8eaed;">AI ALPHA REASONING SYNTHESIS</span>
+                <span class="compliance-tag font-mono" id="ai-source-badge" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">Anna Host LLM</span>
+              </div>
+              <button class="action-btn-ghost font-mono" id="btn-dispatch-ai-chat" style="font-size: 11px; padding: 4px 10px;">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>Export to Anna Chat</span>
+              </button>
+            </div>
+
+            <div id="ai-terminal-response-body" class="font-mono" style="font-size: 12px; line-height: 1.6; color: #c9cdd4; white-space: pre-wrap;">
+Click "Run AI Alpha Synthesis" or select an intelligence preset above to generate real-time quantitative reasoning powered by Anna AI OS.
             </div>
           </div>
         </div>

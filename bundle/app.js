@@ -1015,10 +1015,9 @@ function initAnnaChatIntegration() {
   if (!chatBtn) return;
   assertInvariant(chatBtn instanceof HTMLElement, "chatBtn must be HTMLElement");
 
-  chatBtn.addEventListener("click", async () => {
+  chatBtn.addEventListener("click", () => {
     if (!selectedAsset || isDispatchingChat) return;
     isDispatchingChat = true;
-    chatBtn.disabled = true;
 
     const sym = sanitizeField(selectedAsset.symbol, 12);
     const name = sanitizeField(selectedAsset.name, 32);
@@ -1032,33 +1031,15 @@ function initAnnaChatIntegration() {
     const regime = sanitizeField(selectedAsset.regime || "TRENDING", 24);
     const turnover = sanitizeField(selectedAsset.turnover_tier || "DEEP_LIQUIDITY", 24);
 
-    const inquiry = `[QUANTITATIVE RESEARCH BRIEF] ${sym} (${name})
-- Market Rank: #${rank} | Alpha Score: ${score} / 10.0
-- Spot Reference: ${priceStr} | 24h: ${ret24}% | 7d: ${ret7d}%
-- 24h Volume: ${volStr} | Turnover Tier: ${turnover}
-- Realized Volatility: ${parkVol} (Regime: ${regime})
+    const promptText = `Analyze why ${sym} (${name}) ranks #${rank} in cross-sectional momentum (Alpha Score: ${score}/10.0, Spot Price: ${priceStr}, 24h: ${ret24}%, 7d: ${ret7d}%, Volume: ${volStr}, Parkinson Volatility: ${parkVol}, Regime: ${regime}, Turnover: ${turnover}). Detail key factor drivers and 48-hour downside risk parameters.`;
 
-Analysis Objective: Synthesize cross-sectional factor drivers, institutional orderbook depth, and 48-hour downside risk parameters.`;
-
-    const originalContent = chatBtn.innerHTML;
-    chatBtn.innerHTML = `<span class="btn-spinner"></span> <span>Dispatching to Anna...</span>`;
-
-    await safeDispatchChatMessage(inquiry);
-
-    chatBtn.classList.add("btn-dispatched");
-    chatBtn.innerHTML = `<span>✓ Dispatched to Anna Chat!</span>`;
-    showTerminalToast(`Quantitative brief for ${sym} dispatched to Anna Chat.`);
+    routeToAICopilotWithPrompt(promptText, `${sym} (#${rank} Alpha)`);
 
     setTimeout(() => {
-      chatBtn.classList.remove("btn-dispatched");
-      chatBtn.innerHTML = originalContent;
-      const symSpan = document.getElementById("detail-action-symbol");
-      if (symSpan) symSpan.textContent = sym;
-      chatBtn.disabled = false;
       isDispatchingChat = false;
-    }, 2500);
+    }, 1000);
   });
-  assertInvariant(typeof isDispatchingChat === "boolean", "dispatch lock state must be boolean");
+  assertInvariant(typeof isDispatchingChat === "boolean", "isDispatchingChat must be boolean");
 }
 
 function getAdvisoryByRegime(regimeClass) {
@@ -2304,52 +2285,14 @@ async function renderRiskParityWeights() {
 }
 
 async function dispatchAnnaQuantBrief() {
-  const statusNote = document.getElementById("dispatch-status-note");
-  const dispatchBtn = document.getElementById("btn-dispatch-anna");
-  const footerBtn = document.getElementById("btn-footer-dispatch");
   assertInvariant(typeof window !== "undefined", "window must be defined");
   const topAsset = (currentAssets && currentAssets[0]) ? currentAssets[0].symbol : "SOL";
-  const btcRegime = STANDALONE_FIXTURES.quotes.BTC.regime || "COMPRESSION";
+  const btcRegime = STANDALONE_FIXTURES.quotes.BTC ? STANDALONE_FIXTURES.quotes.BTC.regime : "COMPRESSION";
+  assertInvariant(typeof topAsset === "string", "topAsset must be string");
 
-  const message = `[QUANT EXECUTIVE BRIEF]\n\n` +
-    `* Primary Alpha Leader: ${topAsset} (Multi-factor momentum top decile)\n` +
-    `* Bitcoin Volatility Regime: ${btcRegime} (Parkinson σ < 2.5%)\n` +
-    `* Squeeze Warning: DOGE perpetual funding negative (-0.065%/8h) - Short squeeze alert.\n` +
-    `* Recommended ERC Allocation: BTC 34.2%, ETH 28.5%, BNB 16.8%, SOL 12.1%, AVAX 8.4%\n` +
-    `* 1D 95% Parametric Portfolio VaR: -$3,450.25 per $100k notional.`;
+  const promptText = `Generate institutional Risk Parity and Carry analysis. Top Alpha Leader: ${topAsset}, Bitcoin Regime: ${btcRegime}, perpetual funding rates and equal risk contribution weights across the top 10 universe. Recommend optimal delta-neutral hedging.`;
 
-  assertInvariant(typeof message === "string", "message must be string");
-
-  const originalContent = dispatchBtn ? dispatchBtn.innerHTML : "";
-  if (dispatchBtn) {
-    dispatchBtn.disabled = true;
-    dispatchBtn.innerHTML = `<span class="btn-spinner"></span> <span>Dispatching Brief...</span>`;
-  }
-  if (footerBtn) footerBtn.disabled = true;
-
-  await safeDispatchChatMessage(message);
-
-  const timeStr = new Date().toLocaleTimeString();
-  if (statusNote) {
-    statusNote.textContent = `✓ Dispatched structured brief to active Anna conversation (${timeStr}).`;
-    statusNote.classList.add("dispatched-active");
-  }
-
-  if (dispatchBtn) {
-    dispatchBtn.classList.add("btn-dispatched");
-    dispatchBtn.innerHTML = `<span>✓ Brief Dispatched to Anna!</span>`;
-  }
-
-  showTerminalToast("Quantitative Executive Brief dispatched to Anna conversation.");
-
-  setTimeout(() => {
-    if (dispatchBtn) {
-      dispatchBtn.classList.remove("btn-dispatched");
-      dispatchBtn.innerHTML = originalContent || `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> <span>Dispatch Quantitative Brief to Anna</span>`;
-      dispatchBtn.disabled = false;
-    }
-    if (footerBtn) footerBtn.disabled = false;
-  }, 2500);
+  routeToAICopilotWithPrompt(promptText, "RISK PARITY & CARRY ENGINE");
 }
 
 // --- Tab 7: Statistical Arbitrage & Cointegration Pairs ---
@@ -2498,41 +2441,43 @@ async function dispatchAnnaStatArb() {
   const data = COINT_PAIRS_FIXTURE[pair] || COINT_PAIRS_FIXTURE["SOL/ETH"];
   assertInvariant(Boolean(data), "data must exist");
 
-  const message = `[STAT-ARB PAIR BRIEF: ${data.pair}]\n\n` +
-    `* Signal: ${data.signal} (Z-Score: ${data.spread_zscore >= 0 ? "+" : ""}${data.spread_zscore}σ)\n` +
-    `* Hedge Ratio (β): ${data.hedge_ratio_beta} | Half-Life: ${data.half_life_days} Days\n` +
-    `* Stationarity: ADF p-value ${data.p_value_adf} (${data.is_stationary ? "Stationary" : "Non-Stationary"})\n` +
-    `* Sizing: 50/50 delta-neutral long/short basket against sector beta.`;
+  const promptText = `Analyze statistical arbitrage cointegration strategy for ${pair}. Current spread signal: ${data.signal} (Z-Score: ${data.spread_zscore >= 0 ? "+" : ""}${data.spread_zscore}σ, Hedge Ratio β: ${data.hedge_ratio_beta}, Half-Life: ${data.half_life_days} days, ADF Stationarity: ${data.is_stationary ? "Stationary" : "Non-Stationary"}). Detail mean-reversion trade execution and stop-loss criteria.`;
 
-  const note = document.getElementById("dispatch-status-note");
-  const btn = document.getElementById("btn-dispatch-stat-arb");
-  const originalContent = btn ? btn.innerHTML : "";
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = `<span class="btn-spinner"></span> <span>Dispatching...</span>`;
+  routeToAICopilotWithPrompt(promptText, `PAIR ${pair} STAT-ARB`);
+}
+
+function routeToAICopilotWithPrompt(promptText, targetLabel) {
+  assertInvariant(typeof promptText === "string" && promptText.length > 0, "promptText must be non-empty string");
+  assertInvariant(typeof targetLabel === "string", "targetLabel must be string");
+
+  // 1. Switch active tab to Tab 8 (AI Alpha Copilot)
+  const tabBtn = document.querySelector('[data-tab="tab-ai-copilot"]');
+  if (tabBtn) {
+    tabBtn.click();
   }
 
-  await safeDispatchChatMessage(message);
-
-  if (note) {
-    note.textContent = `✓ Emitted ${data.pair} pairs brief to Anna OS.`;
-    note.classList.add("dispatched-active");
+  // 2. Inject tailored quantitative prompt into textarea
+  const promptInput = document.getElementById("input-ai-terminal-prompt");
+  if (promptInput) {
+    promptInput.value = promptText;
   }
 
-  if (btn) {
-    btn.classList.add("btn-dispatched");
-    btn.innerHTML = `<span>✓ Dispatched to Anna!</span>`;
+  // 3. Update target context label
+  const contextLabel = document.getElementById("ai-active-asset-label");
+  if (contextLabel) {
+    contextLabel.textContent = `Target Context: ${targetLabel}`;
   }
 
-  showTerminalToast(`Stat-Arb ${data.pair} brief dispatched to Anna OS.`);
+  // 4. Trigger AI Copilot synthesis immediately
+  runAICopilotSynthesis();
 
+  // 5. Scroll smoothly to the AI output card so user sees live output
   setTimeout(() => {
-    if (btn) {
-      btn.classList.remove("btn-dispatched");
-      btn.innerHTML = originalContent || `<span>DISPATCH PAIR TO ANNA CHAT</span>`;
-      btn.disabled = false;
+    const outputCard = document.querySelector(".ai-terminal-output-card");
+    if (outputCard && typeof outputCard.scrollIntoView === "function") {
+      outputCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-  }, 2500);
+  }, 100);
 }
 
 function updateAICopilotContextLabel() {
@@ -2615,7 +2560,7 @@ async function dispatchAICopilotToAnnaChat() {
 
   const promptInput = document.getElementById("input-ai-terminal-prompt");
   const query = promptInput ? promptInput.value.trim() : "Market Intelligence";
-  const formattedMsg = `### ANNA AI ALPHA SYNTHESIS (${query})\n\n${text}\n\n*Emitted from CMC Alpha Terminal · Anna AI OS v1.1.0*`;
+  const formattedMsg = `### ANNA AI ALPHA SYNTHESIS (${query})\n\n${text}\n\n*Emitted from CMC Alpha Terminal · Anna AI OS v1.1.1*`;
 
   const originalContent = dispatchBtn.innerHTML;
   dispatchBtn.disabled = true;

@@ -454,11 +454,37 @@ button:focus-visible {
   min-height: 0;
 }
 
+/* ==========================================================================
+   Global Institutional Scrollbars
+   ========================================================================== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 19, 25, 0.4);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.5);
+}
+
 .terminal-panel {
   display: none;
   height: 100%;
   flex-direction: column;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(15, 19, 25, 0.4);
 }
 
 .terminal-panel.active {
@@ -475,6 +501,29 @@ button:focus-visible {
   padding: 10px 14px;
   gap: 10px;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(15, 19, 25, 0.4);
+}
+
+.ai-terminal-output-card {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: rgba(15, 19, 25, 0.7);
+  padding: 16px;
+  min-height: 200px;
+  flex-shrink: 0;
+  margin-bottom: 16px;
+  overflow-y: visible;
+}
+
+#ai-terminal-response-body {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #c9cdd4;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .panel-headline-row {

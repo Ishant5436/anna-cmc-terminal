@@ -189,9 +189,9 @@ def test_invoke_liquidity_all_assets_list():
         assert "slippage_risk" in item
 
 
-def test_manifest_version_110():
+def test_manifest_version_111():
     desc = handle_describe({})
-    assert desc["version"] == "1.1.0"
+    assert desc["version"] == "1.1.1"
 
 
 def test_bundle_volatility_table_contract():
@@ -461,6 +461,53 @@ def test_cloud_agent_fixes_contracts():
     assert "items.length <= 1" in js
     assert "terminal-toast" in css
     assert "btn-dispatched" in css
+
+
+def test_remediation_v3_scrollability_contracts():
+    """Verify CSS contracts ensure every panel is scrollable and AI report on Tab 8 is reachable."""
+    bundle_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bundle"))
+    with open(os.path.join(bundle_dir, "style.css"), "r", encoding="utf-8") as f:
+        css = f.read()
+
+    # Invariant 1: .terminal-panel must enforce overflow-y: auto
+    assert ".terminal-panel" in css
+    assert "overflow-y: auto" in css
+
+    # Invariant 2: Global custom scrollbars must be styled
+    assert "::-webkit-scrollbar" in css
+    assert "::-webkit-scrollbar-thumb" in css
+    assert "::-webkit-scrollbar-track" in css
+
+    # Invariant 3: Tab 8 AI terminal output card styling exists
+    assert ".ai-terminal-output-card" in css
+
+
+def test_remediation_v3_end_to_end_ai_dispatch_bindings():
+    """Verify Tab 1, 6, and 7 dispatch buttons provide end-to-end AI synthesis in Tab 8."""
+    bundle_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bundle"))
+    with open(os.path.join(bundle_dir, "app.js"), "r", encoding="utf-8") as f:
+        js = f.read()
+    with open(os.path.join(bundle_dir, "index.html"), "r", encoding="utf-8") as f:
+        html = f.read()
+
+    # Invariant 1: routeToAICopilotWithPrompt router function exists in app.js
+    assert "routeToAICopilotWithPrompt" in js
+
+    # Invariant 2: Tab 1 button triggers routeToAICopilotWithPrompt
+    assert "btn-ask-anna-selected" in js
+    assert "routeToAICopilotWithPrompt(" in js
+
+    # Invariant 3: Tab 6 button triggers routeToAICopilotWithPrompt
+    assert "btn-dispatch-anna" in js
+
+    # Invariant 4: Tab 7 button triggers routeToAICopilotWithPrompt
+    assert "btn-dispatch-stat-arb" in js
+
+    # Invariant 5: HTML button labels updated for clarity and end-to-end AI action
+    assert "Ask Anna AI why" in html
+    assert "Generate Risk Parity AI Brief" in html
+    assert "Analyze Pair Strategy with Anna AI" in html
+
 
 
 

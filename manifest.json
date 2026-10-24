@@ -15,14 +15,23 @@
     }
   ],
   "optional_executas": [],
-  "system_prompt_addendum": "The user has CMC Alpha Terminal open. Use the screener Executa with method='screener' and arguments {action:'momentum'|'volatility'|'liquidity'|'breadth'|'quote'} to fetch institutional quantitative crypto metrics before making statements regarding market trend, volatility regimes, or asset liquidity.",
+  "system_prompt_addendum": "The user has CMC Alpha Terminal open. Whenever the user inquires about cryptocurrency prices, Bitcoin/Ethereum/Solana trends, market volatility, liquidity depth, or alpha opportunities, proactively use the screener Executa with method='screener' and arguments {action:'momentum'|'volatility'|'liquidity'|'breadth'|'quote'} to fetch real-time quantitative metrics before answering.",
   "user_message_prefix_template": "[CMC Terminal] {user_message}",
   "tags": [
     "crypto",
     "finance",
     "quantitative",
     "screener",
-    "alpha"
+    "alpha",
+    "bitcoin",
+    "solana",
+    "trading",
+    "terminal",
+    "market",
+    "volatility",
+    "momentum",
+    "defi",
+    "data"
   ],
   "ui": {
     "bundle": {

@@ -1,8 +1,11 @@
 # CMC Alpha Terminal — Anna AI OS App
 
+[![Install on Anna OS](https://img.shields.io/badge/Anna%20OS-Install%20App-7c3aed?style=for-the-badge&logo=apple&logoColor=white)](https://anna.partners/apps/cmc-alpha-terminal)
 [![Validation](https://img.shields.io/badge/anna--app-validate%20--strict%20passed-success)](https://anna.partners)
 [![Schema](https://img.shields.io/badge/schema-v2-blue)](https://anna.partners/developers/apps/app-manifest)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+![CMC Alpha Terminal](assets/cover.png)
 
 An institutional quantitative intelligence terminal and alpha screener designed natively for **Anna AI OS**.
 Pairs a high-performance Python Executa plugin with an interactive glassmorphic desktop interface to deliver real-time cross-sectional momentum screening, Parkinson realized volatility regime detection, liquidity depth analysis, and global market breadth tracking.

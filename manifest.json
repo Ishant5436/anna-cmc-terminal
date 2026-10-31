@@ -102,7 +102,11 @@
         "'self'"
       ]
     },
-    "state_merge": "last_writer_wins"
+    "state_merge": "last_writer_wins",
+    "form_factors": [
+      "desktop",
+      "mobile"
+    ]
   },
   "dev": {
     "fixtures": [],
